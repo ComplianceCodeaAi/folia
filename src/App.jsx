@@ -97,7 +97,7 @@ const Shell = ({children}) => <div style={{fontFamily:"'DM Sans',sans-serif",max
 const Header = ({right}) => (
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 2rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
     <div style={{display:"flex",alignItems:"center",gap:12}}>
-      <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>Folia</span>
+      <span onClick={()=>setView("welcome")} style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink,cursor:"pointer"}}onClick={()=>setView("welcome")}>Folia</span>
       <span style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:500}}>Perimenopause platform</span>
     </div>
     {right&&<span style={{fontSize:12,color:T.inkSoft}}>{right}</span>}
