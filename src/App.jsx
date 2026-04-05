@@ -185,7 +185,7 @@ export default function Folia() {
       <div style={{marginBottom:"3rem"}}>
         <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:"1.25rem"}}>Perimenopause care, finally</p>
         <h1 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(38px,6vw,58px)",fontWeight:700,color:T.ink,lineHeight:1.08,letterSpacing:"-0.025em",marginBottom:"1.5rem"}}>
-          Your perimenopause,<br/><em style={{color:T.terra,fontStyle:"italic"}}>understood and treated.</em>
+          Your hormones changed,<br/><em style={{color:T.terra,fontStyle:"italic"}}>your care should too.</em>
         </h1>
         <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:500,marginBottom:"2rem",fontWeight:300}}>
           Most women wait 4–6 years for a diagnosis. Folia maps where you are, gets FDA-approved medication to your door in days, and follows up for the full year.
