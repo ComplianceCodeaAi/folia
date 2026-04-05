@@ -190,15 +190,6 @@ export default function Folia() {
         <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:500,marginBottom:"2rem",fontWeight:300}}>
           Most women wait 4–6 years for a diagnosis. Folia maps where you are, gets FDA-approved medication to your door in days, and follows up for the full year.
         </p>
-
-        {/* Promise strip */}
-        <div className="fu2" style={{display:"flex",gap:0,marginBottom:"2.5rem",borderRadius:14,overflow:"hidden",border:`1px solid ${T.border}`}}>
-          {[{n:"Day 1",l:"Intake + profile"},{n:"Day 2",l:"Prescription issued"},{n:"Day 4–6",l:"Medication at your door"},{n:"Always",l:"Your care team"}].map((s,i)=>(
-            <div key={i} style={{flex:1,padding:"1rem 0.75rem",background:i===2?T.ink:T.surface,textAlign:"",borderRight:i<3?`1px solid ${T.border}`:"none"}}>
-              <p style={{fontSize:12,fontWeight:700,color:i===2?T.white:T.terra,marginBottom:"0.35rem",fontFamily:"'Playfair Display',serif"}}>{s.n}</p>
-              <p style={{fontSize:11,color:i===2?"rgba(255,255,255,0.6)":T.inkSoft,lineHeight:1.4,fontWeight:300}}>{s.l}</p>
-            </div>
-          ))}
         </div>
 
         {/* Features */}
