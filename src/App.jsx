@@ -31,25 +31,26 @@ const SYSTEM_PROMPT = `You are Folia's perimenopause intake guide. You collect t
 
 Collect ALL of the following across 8–10 exchanges:
 
-1. Age range — ask warmly: 35–39, 40–44, 45–49, or 50 and older
-2. Cycle status: regular / irregular / no period 3-11 months / no period 12+ months
+1. First name (ask warmly to open)
+2. Date of birth (explain it helps determine the safest options)
+3. Cycle status: regular / irregular / no period 3-11 months / no period 12+ months
    → If "12+ months": also ask how long (1-2 years / 3-5 years / 5+ years)
-3. Symptoms (guide toward: hot flashes, night sweats, sleep disruption, mood/anxiety, brain fog, low libido, vaginal dryness, urinary urgency, joint aches, palpitations, weight gain, skin/hair changes) + how severely they affect daily life (mild/moderate/severe) — ask both together conversationally
-4. Uterus status: yes / hysterectomy / partial hysterectomy — explain this is one of the most important safety questions
-5. Medical history — ask about ALL of these in one conversational message:
+4. Symptoms (guide toward: hot flashes, night sweats, sleep disruption, mood/anxiety, brain fog, low libido, vaginal dryness, urinary urgency, joint aches, palpitations, weight gain, skin/hair changes) + how severely they affect daily life (mild/moderate/severe) — ask both together conversationally
+5. Uterus status: yes / hysterectomy / partial hysterectomy — explain this is one of the most important safety questions
+6. Medical history — ask about ALL of these in one conversational message:
    Personal: blood clots (DVT/PE), stroke or heart attack, breast cancer, endometrial/ovarian cancer, liver disease, unexplained vaginal bleeding in past 6 months
    Family (mother/sister): breast cancer before 50, blood clots, heart attack before 60
-6. Current medications — ask about: hormonal contraceptives, antidepressants/anti-anxiety, blood thinners, tamoxifen or aromatase inhibitors, seizure medications, St. John's Wort
+7. Current medications — ask about: hormonal contraceptives, antidepressants/anti-anxiety, blood thinners, tamoxifen or aromatase inhibitors, seizure medications, St. John's Wort
    ALSO on the same message ask: blood pressure (normal/elevated/untreated high/unknown) and smoking status (no/occasionally/regularly)
-7. Skin concern briefly (dryness / breakouts / pigmentation / sensitivity / hair thinning / none) — frame as "last one, this is for your skincare protocol"
-8. Current provider: yes / no
+8. Skin concern briefly (dryness / breakouts / pigmentation / sensitivity / hair thinning / none) — frame as "last one, this is for your skincare protocol"
+9. Current provider: yes / no
 
 CRITICAL FLAGS — if user mentions any of these, acknowledge gently and note that their provider will discuss safe alternatives:
 - Tamoxifen: "Important — estrogen and tamoxifen cannot be taken together. Your provider will discuss non-hormonal options."
 - Blood clots, stroke, breast cancer: "Thank you for sharing this. Some standard options may not be right for you, but your provider will discuss every safe alternative."
 
 After collecting everything, output on its own line:
-PROFILE_JSON:{"cycle":"regular","cycleMonths":"","symptoms":[],"severity":"moderate","hasUterus":true,"contraindications":[],"familyHistory":[],"medications":[],"bloodPressure":"normal","smoking":"no","skinConcern":"dryness","hasProvider":false,"phase":"early"}
+PROFILE_JSON:{"name":"","dob":"","cycle":"regular","cycleMonths":"","symptoms":[],"severity":"moderate","hasUterus":true,"contraindications":[],"familyHistory":[],"medications":[],"bloodPressure":"normal","smoking":"no","skinConcern":"dryness","hasProvider":false,"phase":"early"}
 
 Phase logic: pre-peri=regular cycle + mild + age<42; early=irregular OR 2-3 moderate symptoms; mid=3+ symptoms OR severe; late=stopped 12mo+ OR multiple severe
 
@@ -96,7 +97,7 @@ const Shell = ({children}) => <div style={{fontFamily:"'DM Sans',sans-serif",max
 const Header = ({right}) => (
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 2rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
     <div style={{display:"flex",alignItems:"center",gap:12}}>
-      <span onClick={()=>setView("welcome")} style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink,cursor:"pointer"}}onClick={()=>setView("welcome")}>Folia</span>
+      <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>Folia</span>
       <span style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:500}}>Perimenopause platform</span>
     </div>
     {right&&<span style={{fontSize:12,color:T.inkSoft}}>{right}</span>}
@@ -145,7 +146,7 @@ export default function Folia() {
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
-        headers:{"Content-Type":"application/json","x-api-key":import.meta.env.VITE_ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        headers:{"Content-Type":"application/json","x-api-key":"YOUR_API_KEY_HERE","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,system:SYSTEM_PROMPT,messages:history}),
       });
       const data = await res.json();
@@ -189,7 +190,6 @@ export default function Folia() {
         <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:500,marginBottom:"2rem",fontWeight:300}}>
           Most women wait 4–6 years for a diagnosis. Folia maps where you are, gets FDA-approved medication to your door in days, and follows up for the full year.
         </p>
-        </div>
 
         {/* Features */}
         <div className="fu3" style={{marginBottom:"2.5rem"}}>
@@ -216,7 +216,7 @@ export default function Folia() {
         {/* Stats */}
         <div className="fu3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"2.5rem"}}>
           {[{n:"73M",l:"U.S. women in perimenopause"},{n:"4–6yr",l:"Average wait for diagnosis"},{n:"4–6d",l:"Intake to medication"}].map(s=>(
-            <div key={s.n} style={{padding:"1.25rem 1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"left"}}>
+            <div key={s.n} style={{padding:"1.25rem 1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"center"}}>
               <p style={{fontFamily:"'Playfair Display',serif",fontSize:24,fontWeight:700,color:T.terra,marginBottom:"0.4rem"}}>{s.n}</p>
               <p style={{fontSize:11,color:T.inkSoft,lineHeight:1.5,fontWeight:300}}>{s.l}</p>
             </div>
@@ -233,7 +233,7 @@ export default function Folia() {
 
         <div className="fu4">
           <Btn onClick={startChat} disabled={!agreed}>Start my perimenopause assessment →</Btn>
-          <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"left"}}>3–4 minutes · Medically complete · HIPAA protected</p>
+          <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"center"}}>3–4 minutes · Medically complete · HIPAA protected</p>
         </div>
       </div>
     </Shell>
@@ -402,7 +402,7 @@ export default function Folia() {
               <button style={{width:"100%",padding:"0.875rem",marginTop:"1rem",background:isRec?plan.color:T.surface,color:isRec?T.white:T.ink,border:isRec?"none":`1.5px solid ${T.border}`,borderRadius:12,fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
                 {isRec?`Start ${plan.name} →`:`Choose ${plan.name}`}
               </button>
-              {plan.note&&<p style={{fontSize:11,color:T.inkSoft,textAlign:"left",marginTop:"0.6rem",fontWeight:300}}>{plan.note}</p>}
+              {plan.note&&<p style={{fontSize:11,color:T.inkSoft,textAlign:"center",marginTop:"0.6rem",fontWeight:300}}>{plan.note}</p>}
             </div>
           );
         })}
@@ -437,7 +437,7 @@ export default function Folia() {
             {step:"04",time:"Day 4–6",label:"Medication at your door",detail:"Tracking sent to your phone. Welcome kit includes your protocol card and a Layer SPF sample."},
           ].map((s,i)=>(
             <div key={i} style={{display:"flex",gap:16,paddingBottom:i<3?"1.25rem":0,marginBottom:i<3?"1.25rem":0,borderBottom:i<3?"1px solid rgba(255,255,255,0.08)":"none"}}>
-              <div style={{textAlign:"left",minWidth:40}}>
+              <div style={{textAlign:"center",minWidth:40}}>
                 <span style={{fontFamily:"'Playfair Display',serif",fontSize:13,color:T.terra,fontWeight:700}}>{s.step}</span>
                 <p style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:"0.25rem",whiteSpace:"nowrap"}}>{s.time}</p>
               </div>
@@ -449,7 +449,7 @@ export default function Folia() {
           ))}
           <div style={{marginTop:"1.5rem",paddingTop:"1.5rem",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
             <button style={{width:"100%",padding:"1rem",background:T.terra,color:T.white,border:"none",borderRadius:12,fontSize:15,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Get my prescription reviewed →</button>
-            <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:"0.75rem",textAlign:"left",fontWeight:300}}>No appointment needed. Specialist offered if clinically indicated.</p>
+            <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:"0.75rem",textAlign:"center",fontWeight:300}}>No appointment needed. Specialist offered if clinically indicated.</p>
           </div>
         </div>
 
@@ -531,7 +531,7 @@ export default function Folia() {
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"1.75rem"}}>
           {[{l:"Medication ETA",v:"4–6d"},{l:"Care touchpoints",v:"9"},{l:"Your guide",v:"Sarah"}].map(m=>(
-            <div key={m.l} style={{padding:"1.25rem 1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"left"}}>
+            <div key={m.l} style={{padding:"1.25rem 1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"center"}}>
               <p style={{fontSize:10,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.5rem"}}>{m.l}</p>
               <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>{m.v}</p>
             </div>
@@ -636,7 +636,7 @@ export default function Folia() {
           </div>
         </div>
 
-        <div style={{textAlign:"left",padding:"0.5rem 0 3rem"}}>
+        <div style={{textAlign:"center",padding:"0.5rem 0 3rem"}}>
           <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.ink,fontStyle:"italic",marginBottom:"0.5rem"}}>Always scheduled. Never reactive.</p>
           <p style={{fontSize:13,color:T.inkSoft,lineHeight:1.75,maxWidth:400,margin:"0 auto",fontWeight:300}}>You matter enough for us to show up even when everything is fine.</p>
         </div>
