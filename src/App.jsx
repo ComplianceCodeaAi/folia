@@ -86,9 +86,9 @@ const PHASES = {
 };
 
 const PLANS = [
-  { id:"aware", name:"Folia Aware", price:19, tagline:"For the early transition", phases:["pre-peri"], includes:["Perimenopause phase assessment","Phase-matched skincare protocol","Symptom tracking","Care guide access"], note:"Does not include prescription or medication delivery", color:T.sage, pale:T.sagePale, stripe:"https://buy.stripe.com/aware" },
-  { id:"active", name:"Folia Active", price:39, tagline:"For active perimenopause", phases:["early","mid"], recommended:true, includes:["Everything in Aware","Same-day provider review","Prescription + medication to your door in 4–6 days","Day-7 welcome call","30-day consultation pre-booked","Quarterly care reviews"], note:"7-day free trial · Cancel anytime", color:T.terra, pale:T.terraLight, stripe:"https://buy.stripe.com/active" },
-  { id:"complete", name:"Folia Complete", price:59, tagline:"For mid to late perimenopause", phases:["mid","late"], includes:["Everything in Active","Quarterly consultations included","Dedicated NAMS specialist","Layer SPF quarterly replenishment","Annual full care review"], note:"7-day free trial · Cancel anytime", color:T.inkMid, pale:T.cream, stripe:"https://buy.stripe.com/complete" },
+  { id:"aware", name:"Folia Aware", price:19, tagline:"Hormone insight + personalized profile", phases:["pre-peri"], includes:["Perimenopause phase assessment","Phase-matched skincare protocol","Symptom tracking","Care guide access"], note:"Does not include prescription or medication delivery", color:T.sage, pale:T.sagePale, stripe:"https://buy.stripe.com/aware" },
+  { id:"active", name:"Folia Active", price:39, tagline:"Provider-reviewed care + treatment plan", phases:["early","mid"], recommended:true, includes:["Everything in Aware","Same-day provider review","Prescription + medication to your door in 4–6 days","Day-7 welcome call","30-day consultation pre-booked","Quarterly care reviews"], note:"7-day free trial · Cancel anytime", color:T.terra, pale:T.terraLight, stripe:"https://buy.stripe.com/active" },
+  { id:"complete", name:"Folia Complete", price:59, tagline:"Full protocol, ongoing care, and continuous support", phases:["mid","late"], includes:["Everything in Active","Quarterly consultations included","Dedicated NAMS specialist","Layer SPF quarterly replenishment","Annual full care review"], note:"7-day free trial · Cancel anytime", color:T.inkMid, pale:T.cream, stripe:"https://buy.stripe.com/complete" },
 ];
 
 const SKIN = {
@@ -204,7 +204,7 @@ const Header = ({right,lang,setLang,onInfo}) => (
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 1.5rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
     <div style={{display:"flex",alignItems:"center",gap:12}}>
       <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>Folia</span>
-      <span style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:500}}>Midlife body system</span>
+      <span style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:500}}>Midlife Hormone System</span>
     </div>
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       {setLang&&(
@@ -324,31 +324,63 @@ export default function Folia() {
       <InfoDrawer/>
       <Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)}/>
       <div style={{marginBottom:"3rem"}}>
-        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:"1.25rem"}}>Your midlife skin + hormone system</p>
+        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:"1.25rem"}}>Folia Midlife Hormone System</p>
         <h1 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(38px,6vw,58px)",fontWeight:700,color:T.ink,lineHeight:1.08,letterSpacing:"-0.025em",marginBottom:"1.5rem"}}>
           {lang==="zh"?<>你的身体正在改变。<br/><em style={{color:T.terra,fontStyle:"italic"}}>你的系统也应该随之改变。</em></>:lang==="es"?<>Tu cuerpo está cambiando.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Tu sistema también debería.</em></>:lang==="pt"?<>Seu corpo está mudando.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Seu sistema também deveria.</em></>:<>Your body is changing.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Your system should too.</em></>}
         </h1>
-        <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:500,marginBottom:"2rem",fontWeight:300}}>{t.sub}</p>
+        <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:520,marginBottom:"2rem",fontWeight:300}}>
+          Most women spend years trying to name what's happening. Folia maps your hormonal transition, identifies your stage, and builds a care plan that combines clinical treatment, ongoing support, and targeted skin care.
+        </p>
 
-        {/* Features */}
+        {/* Hormone Care section */}
         <div className="fu3" style={{marginBottom:"2.5rem"}}>
           <div style={{borderLeft:`3px solid ${T.terra}`,paddingLeft:"1.25rem",marginBottom:"1.5rem"}}>
-            <p style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Hormones + clinical care</p>
-            {["Perimenopause phase assessment — conversational, 3 minutes","Same-day provider review — prescription issued without an appointment","Medication at your door in 4–6 days via pharmacy partner","Proactive care team — welcome call, consultations, quarterly reviews, all pre-scheduled"].map((tx,i)=>(
-              <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:"0.7rem"}}>
-                <span style={{fontFamily:"'Playfair Display',serif",fontSize:12,color:T.terra,fontWeight:700,minWidth:20,paddingTop:2}}>0{i+1}</span>
-                <span style={{fontSize:14,color:T.inkMid,lineHeight:1.55,fontWeight:300}}>{tx}</span>
+            <p style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Hormone care, clinically guided</p>
+            {[
+              ["01 — Precision assessment","A conversational intake that identifies your perimenopause stage in minutes — based on cycle changes, symptoms, and risk profile."],
+              ["02 — Provider-reviewed care","Licensed clinicians review your case the same day and determine the safest, most effective treatment — without requiring an appointment."],
+              ["03 — Treatment, delivered","If appropriate, prescriptions are issued and shipped directly to your door within days."],
+              ["04 — Ongoing support system","Structured follow-ups, care touchpoints, and continuous adjustments — designed to support you through every phase."],
+            ].map(([title,desc],i)=>(
+              <div key={i} style={{marginBottom:"1.1rem"}}>
+                <p style={{fontSize:13,fontWeight:500,color:T.ink,marginBottom:"0.3rem"}}>{title}</p>
+                <p style={{fontSize:14,color:T.inkMid,lineHeight:1.6,fontWeight:300}}>{desc}</p>
               </div>
             ))}
           </div>
-          <div style={{borderLeft:`3px solid ${T.border}`,paddingLeft:"1.25rem"}}>
-            <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Skin + daily life</p>
-            {["Lifestyle-matched skincare protocol — sun exposure, environment, and routine","Layer SPF matched to your UV exposure — included at your six-month milestone","Daily life inputs — sleep, stress, work environment — built into your protocol"].map((tx,i)=>(
-              <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:"0.7rem"}}>
-                <span style={{fontFamily:"'Playfair Display',serif",fontSize:12,color:T.inkSoft,fontWeight:700,minWidth:20,paddingTop:2}}>0{i+5}</span>
-                <span style={{fontSize:14,color:T.inkSoft,lineHeight:1.55,fontWeight:300}}>{tx}</span>
+
+          {/* Understand section */}
+          <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,padding:"1.5rem",marginBottom:"1.5rem"}}>
+            <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Understand what's happening</p>
+            <p style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:T.ink,marginBottom:"0.75rem",lineHeight:1.25}}>Perimenopause is not a single moment — it's a transition.</p>
+            <p style={{fontSize:14,color:T.inkMid,lineHeight:1.65,fontWeight:300,marginBottom:"1rem"}}>Folia translates your symptoms into a clear hormonal picture:</p>
+            {["Changes in estrogen and progesterone","Why sleep, mood, and energy shift","How your cycle reflects your current phase","What your body needs next"].map((item,i)=>(
+              <div key={i} style={{display:"flex",gap:10,marginBottom:"0.5rem",alignItems:"flex-start"}}>
+                <span style={{color:T.terra,fontSize:13,flexShrink:0,marginTop:2}}>◈</span>
+                <span style={{fontSize:14,color:T.inkMid,lineHeight:1.55,fontWeight:300}}>{item}</span>
               </div>
             ))}
+            <p style={{fontSize:13,fontWeight:500,color:T.ink,marginTop:"1rem",paddingTop:"1rem",borderTop:`1px solid ${T.border}`}}>This is not guesswork. It's clinically guided clarity.</p>
+          </div>
+
+          {/* Protocol section */}
+          <div style={{borderLeft:`3px solid ${T.border}`,paddingLeft:"1.25rem",marginBottom:"1.5rem"}}>
+            <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Your personalized protocol</p>
+            <p style={{fontSize:14,color:T.inkMid,lineHeight:1.65,fontWeight:300,marginBottom:"0.75rem"}}>Your plan is built around your body — not a generic checklist. Depending on your profile, your protocol may include hormone therapy, non-hormonal alternatives, sleep and mood support, and skin changes linked to hormonal decline.</p>
+            <p style={{fontSize:13,color:T.inkSoft,lineHeight:1.65,fontStyle:"italic",fontWeight:300}}>Your skin changes are hormonal — not cosmetic. Your protocol includes a UV and skin care layer matched to your transition stage.</p>
+          </div>
+
+          {/* System section */}
+          <div style={{background:T.ink,borderRadius:14,padding:"1.5rem"}}>
+            <p style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Beyond treatment — a system</p>
+            <p style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontWeight:700,color:T.white,marginBottom:"0.75rem",lineHeight:1.3}}>Folia is not just a prescription. It's a structured care system designed for midlife.</p>
+            {["Symptom and response tracking","Care timelines and scheduled reviews","Adjustments as your body changes","Ongoing provider oversight"].map((item,i)=>(
+              <div key={i} style={{display:"flex",gap:10,marginBottom:"0.5rem",alignItems:"flex-start"}}>
+                <span style={{color:T.terra,fontSize:13,flexShrink:0,marginTop:2}}>◈</span>
+                <span style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.55,fontWeight:300}}>{item}</span>
+              </div>
+            ))}
+            <p style={{fontSize:13,fontWeight:500,color:T.terra,marginTop:"1rem",paddingTop:"1rem",borderTop:"1px solid rgba(255,255,255,0.1)"}}>Because perimenopause evolves — and your care should too.</p>
           </div>
         </div>
 
@@ -389,8 +421,8 @@ export default function Folia() {
         </div>
 
         <div className="fu4">
-          <Btn onClick={startChat} disabled={!agreed}>{t.startBtn}</Btn>
-          <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"center"}}>{t.footNote}</p>
+          <Btn onClick={startChat} disabled={!agreed}>Start your assessment →</Btn>
+          <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"center"}}>You don't need to guess what's happening to your body. You need a system built for it.</p>
         </div>
       </div>
     </Shell>
