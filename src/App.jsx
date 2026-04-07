@@ -26,34 +26,43 @@ const G = `
   .fu4{animation:fadeUp 0.45s 0.32s ease both;}
 `;
 
-// ── SYSTEM PROMPT — medically complete, conversational ──────
-const SYSTEM_PROMPT = `You are Folia's perimenopause intake guide. You collect the medical information a licensed provider needs to safely prescribe hormone therapy. You are warm, direct, and never clinical-sounding. Maximum 2 short sentences per response. Ask one thing at a time.
+const SYSTEM_PROMPT = `You are Sarah, Folia's perimenopause care guide. You are warm, grounded, and emotionally intelligent — never clinical, never robotic. You speak like a trusted modern wellness advisor.
 
-Collect ALL of the following across  6–8 exchanges:
+Your FIRST message must always follow this exact structure — no greeting, go straight in:
+- 1 sentence of emotional recognition (e.g. "Something shifted, and you noticed it.")
+- 1 sentence of normalization (e.g. "Most women spend years trying to name exactly what you're feeling.")
+- 1 short transition into the first question (e.g. "I'd love to understand where you are right now — what's your age range?")
 
-1. Age range — ask warmly: 35–39, 40–44, 45–49, or 50 and older
-2. Cycle status: regular / irregular / no period 3-11 months / no period 12+ months
-   → If "12+ months": also ask how long (1-2 years / 3-5 years / 5+ years)
-3. Symptoms (guide toward: hot flashes, night sweats, sleep disruption, mood/anxiety, brain fog, low libido, vaginal dryness, urinary urgency, joint aches, palpitations, weight gain, skin/hair changes) + how severely they affect daily life (mild/moderate/severe) — ask both together conversationally
-4. Uterus status: yes / hysterectomy / partial hysterectomy — explain this is one of the most important safety questions
-5. Medical history — ask about ALL of these in one conversational message:
-   Personal: blood clots (DVT/PE), stroke or heart attack, breast cancer, endometrial/ovarian cancer, liver disease, unexplained vaginal bleeding in past 6 months
-   Family (mother/sister): breast cancer before 50, blood clots, heart attack before 60
-6. Current medications — ask about: hormonal contraceptives, antidepressants/anti-anxiety, blood thinners, tamoxifen or aromatase inhibitors, seizure medications, St. John's Wort
-   ALSO on the same message ask: blood pressure (normal/elevated/untreated high/unknown) and smoking status (no/occasionally/regularly)
-7. Skin concern briefly (dryness / breakouts / pigmentation / sensitivity / hair thinning / none) — frame as "last one, this is for your skincare protocol"
-8. Current provider: yes / no
+After the opening, collect ALL of the following across 10–12 exchanges. Maximum 2 sentences before options. One question at a time.
 
-CRITICAL FLAGS — if user mentions any of these, acknowledge gently and note that their provider will discuss safe alternatives:
+CLINICAL QUESTIONS (collect first — required for provider):
+1. Age range: 35–39 / 40–44 / 45–49 / 50 and older
+2. Cycle status: regular / irregular / no period 3–11 months / no period 12+ months
+   → If "12+ months": also ask how long (1–2 years / 3–5 years / 5+ years)
+3. Symptoms + severity: guide toward hot flashes, night sweats, sleep disruption, mood/anxiety, brain fog, low libido, vaginal dryness, urinary urgency, joint aches, palpitations, weight gain, skin/hair changes. Ask severity (mild/moderate/severe) in the same message.
+4. Uterus status: yes / hysterectomy / partial — explain this is one of the most important safety questions
+5. Medical history in one message — Personal: blood clots (DVT/PE), stroke or heart attack, breast cancer, endometrial/ovarian cancer, liver disease, unexplained vaginal bleeding in past 6 months. Family (mother/sister): breast cancer before 50, blood clots, heart attack before 60
+6. Medications: hormonal contraceptives, antidepressants/anti-anxiety, blood thinners, tamoxifen or aromatase inhibitors, seizure medications, St. John's Wort. ALSO ask blood pressure (normal/elevated/untreated high/unknown) and smoking status (no/occasionally/regularly) in the same message.
+
+LIFESTYLE QUESTIONS (collect after clinical — builds daily protocol):
+7. Sun exposure: Frame warmly as "now let's build your daily life protocol." Ask: how much direct sun do they get daily? Options: Very little — mostly indoors / Moderate — some outdoor time / High — outdoors most of the day / Intense — outdoor worker or athlete
+8. Work + environment: Where do they spend most of their day? Options: Office or home / Mixed indoor/outdoor / Primarily outdoors / Active/physical work environment
+9. Sleep + stress: How is your sleep and stress right now? Options: Sleep okay, stress manageable / Sleep disrupted, stress moderate / Both significantly affected / Stress high, sleep unpredictable
+10. Current skincare routine: What does your skincare routine look like right now? Options: Minimal — cleanser and moisturizer / Basic — cleanser, serum, SPF / Layered — multiple actives / No consistent routine
+
+SKIN QUESTION:
+11. Skin concern (briefly): dryness / breakouts / pigmentation / sensitivity / hair thinning / none — frame as the last one
+
+CRITICAL FLAGS:
 - Tamoxifen: "Important — estrogen and tamoxifen cannot be taken together. Your provider will discuss non-hormonal options."
 - Blood clots, stroke, breast cancer: "Thank you for sharing this. Some standard options may not be right for you, but your provider will discuss every safe alternative."
 
 After collecting everything, output on its own line:
-PROFILE_JSON:{"cycle":"regular","cycleMonths":"","symptoms":[],"severity":"moderate","hasUterus":true,"contraindications":[],"familyHistory":[],"medications":[],"bloodPressure":"normal","smoking":"no","skinConcern":"dryness","hasProvider":false,"phase":"early"}
+PROFILE_JSON:{"ageRange":"40-44","cycle":"regular","cycleMonths":"","symptoms":[],"severity":"moderate","hasUterus":true,"contraindications":[],"familyHistory":[],"medications":[],"bloodPressure":"normal","smoking":"no","sunExposure":"moderate","workEnvironment":"office","sleepStress":"moderate","skincareRoutine":"basic","skinConcern":"dryness","hasProvider":false,"phase":"early"}
 
 Phase logic: pre-peri=regular cycle + mild + age<42; early=irregular OR 2-3 moderate symptoms; mid=3+ symptoms OR severe; late=stopped 12mo+ OR multiple severe
 
-After PROFILE_JSON write one warm closing line like "You're in exactly the right place."
+After PROFILE_JSON write one warm closing line like "You're in exactly the right place — let's build your system."
 
 After each question include quick-reply options on the last line:
 REPLIES:Option A|Option B|Option C|Option D
@@ -89,17 +98,127 @@ const SKIN = {
   sensitivity:["Fragrance-free low-pH cleanser only","Bakuchiol 1% instead of retinol","Centella asiatica moisturizer for barrier repair"],
   default:["Mineral broad-spectrum SPF 50+ every day","Ceramide moisturizer for barrier repair","Bakuchiol 1% serum at night for collagen support"],
 };
+
+const SPF_RECS = {
+  low:     { label:"Daily UV defense", rec:"Lightweight mineral SPF 30+ — for low daily exposure. Layer SPF Everyday formula.", urgency:"foundational" },
+  moderate:{ label:"Active UV protection", rec:"Mineral SPF 50+ with Tinosorb S — for moderate outdoor exposure. Layer SPF Daily formula.", urgency:"recommended" },
+  high:    { label:"Intensive UV protection", rec:"Broad-spectrum SPF 50+ with Tinosorb S — your sun exposure makes this non-negotiable. Layer SPF Intensive formula.", urgency:"essential" },
+  intense: { label:"Professional UV defense", rec:"Water-resistant SPF 50+ with Tinosorb S — reapply every 90 minutes. Layer SPF Sport formula.", urgency:"critical" },
+};
+
+const SLEEP_RECS = {
+  okay:     "Your sleep and stress baseline is manageable — your protocol focuses on maintenance and prevention.",
+  moderate: "Moderate sleep disruption and stress are hallmark perimenopause signals. Your protocol includes targeted support.",
+  affected: "Sleep and stress are both significantly affected — these are the symptoms most responsive to hormonal care. Your provider will prioritize these.",
+  high:     "High stress with unpredictable sleep is a common and treatable pattern at this stage. Your care plan addresses this directly.",
+};
+
+const ROUTINE_RECS = {
+  minimal: "We'll start simple and add one step at a time — your protocol is designed for ease, not complexity.",
+  basic:   "You have the foundation. Your protocol builds on what you already do — one targeted addition.",
+  layered: "You're already layering actives. Your protocol optimizes the order and targets the hormonal root cause.",
+  none:    "No routine is a completely valid starting point. Your protocol begins with two steps and builds from there.",
+};
+
+const getSunRec = (sun="") => {
+  const s = sun.toLowerCase();
+  if(s.includes("intense")||s.includes("athlete")||s.includes("outdoor worker")) return SPF_RECS.intense;
+  if(s.includes("high")||s.includes("most of the day")) return SPF_RECS.high;
+  if(s.includes("moderate")||s.includes("some")) return SPF_RECS.moderate;
+  return SPF_RECS.low;
+};
+
 const getRecs = (c="") => { const s=c.toLowerCase(); if(s.includes("dry"))return SKIN.dryness; if(s.includes("break")||s.includes("acne"))return SKIN.breakouts; if(s.includes("pig")||s.includes("spot"))return SKIN.pigmentation; if(s.includes("sens")||s.includes("red"))return SKIN.sensitivity; return SKIN.default; };
 
-const pill = (bg,fg,sm) => ({ display:"inline-block", padding:sm?"0.2rem 0.65rem":"0.35rem 0.95rem", background:bg, color:fg, borderRadius:40, fontSize:sm?11:12, fontWeight:500, letterSpacing:"0.02em", fontFamily:"'DM Sans',sans-serif", marginBottom:4 });
+const LANGS = {
+  en: { code:"EN", label:"English" },
+  es: { code:"ES", label:"Español" },
+  zh: { code:"中文", label:"Mandarin" },
+  pt: { code:"PT", label:"Português" },
+};
+
+const TR = {
+  en: {
+    tagline:"Your body is changing. Your system should too.",
+    sub:"Most women spend years naming what they're feeling. Folia maps your hormonal transition, connects it to your skin and daily life, and builds a care system around you — not a symptom list.",
+    startBtn:"Start mapping my hormone profile →",
+    learnMore:"Learn more about Folia",
+    learnLess:"Close",
+    footNote:"3–4 minutes · Your answers, your map · HIPAA protected",
+    infoTitle:"How Folia works",
+    infoQ1:"What is Folia?", infoA1:"Folia is a midlife body system — it maps your hormonal transition, builds a personalized skin and daily life protocol, and connects you with a licensed provider who can issue a prescription if appropriate.",
+    infoQ2:"Who reviews my answers?", infoA2:"A licensed, NAMS-certified provider reviews your profile asynchronously — no appointment needed. They make all prescribing decisions independently.",
+    infoQ3:"Is this confidential?", infoA3:"Yes. Everything you share is protected under HIPAA. Your data is never sold or used for advertising.",
+    infoQ4:"What if I just want information, not a prescription?", infoA4:"That's completely fine. The Folia Aware plan gives you your hormone map, skincare protocol, and care guide access — no prescription required.",
+    infoQ5:"How long does the intake take?", infoA5:"3 to 4 minutes. It's conversational — one question at a time. You can pause and come back.",
+    infoClose:"Got it — start my profile →",
+  },
+  es: {
+    tagline:"Tu cuerpo está cambiando. Tu sistema también debería.",
+    sub:"La mayoría de las mujeres pasan años intentando nombrar lo que sienten. Folia mapea tu transición hormonal, la conecta con tu piel y tu vida diaria, y construye un sistema de cuidado centrado en ti.",
+    startBtn:"Comenzar a mapear mi perfil hormonal →",
+    learnMore:"Aprender más sobre Folia",
+    learnLess:"Cerrar",
+    footNote:"3–4 minutos · Tus respuestas, tu mapa · Protegido por HIPAA",
+    infoTitle:"Cómo funciona Folia",
+    infoQ1:"¿Qué es Folia?", infoA1:"Folia es un sistema de cuerpo para la mediana edad — mapea tu transición hormonal, crea un protocolo personalizado de piel y vida diaria, y te conecta con un médico con licencia.",
+    infoQ2:"¿Quién revisa mis respuestas?", infoA2:"Un médico con licencia certificado en menopausia revisa tu perfil de forma asíncrona — sin cita necesaria. Ellos toman todas las decisiones de prescripción de forma independiente.",
+    infoQ3:"¿Es confidencial?", infoA3:"Sí. Todo lo que compartes está protegido bajo HIPAA. Tus datos nunca se venden ni se usan para publicidad.",
+    infoQ4:"¿Qué si solo quiero información, no una receta?", infoA4:"Está perfectamente bien. El plan Folia Aware te da tu mapa hormonal, protocolo de piel y acceso a una guía de cuidado — sin receta necesaria.",
+    infoQ5:"¿Cuánto tiempo toma la evaluación?", infoA5:"3 a 4 minutos. Es conversacional — una pregunta a la vez. Puedes pausar y regresar.",
+    infoClose:"Entendido — comenzar mi perfil →",
+  },
+  zh: {
+    tagline:"你的身体正在改变。你的系统也应该随之改变。",
+    sub:"大多数女性花了数年时间才能说清楚自己的感受。Folia 绘制你的激素变化图谱，将其与你的皮肤和日常生活联系起来，并围绕你建立一个护理系统。",
+    startBtn:"开始绘制我的激素档案 →",
+    learnMore:"了解更多关于 Folia",
+    learnLess:"关闭",
+    footNote:"3–4 分钟 · 你的答案，你的地图 · HIPAA 保护",
+    infoTitle:"Folia 如何运作",
+    infoQ1:"什么是 Folia？", infoA1:"Folia 是一个中年身体系统 — 它绘制你的激素变化图谱，构建个性化的皮肤和日常生活方案，并将你与持牌医生连接，必要时可以开具处方。",
+    infoQ2:"谁来审查我的答案？", infoA2:"持牌的、NAMS 认证的医生会异步审查你的档案 — 无需预约。他们独立做出所有处方决定。",
+    infoQ3:"这是保密的吗？", infoA3:"是的。你分享的一切都受 HIPAA 保护。你的数据不会被出售或用于广告。",
+    infoQ4:"如果我只想要信息，不需要处方呢？", infoA4:"完全没问题。Folia Aware 计划为你提供激素图谱、护肤方案和护理指导 — 无需处方。",
+    infoQ5:"评估需要多长时间？", infoA5:"3 到 4 分钟。采用对话形式 — 每次一个问题。你可以暂停后再回来。",
+    infoClose:"明白了 — 开始我的档案 →",
+  },
+  pt: {
+    tagline:"Seu corpo está mudando. Seu sistema também deveria.",
+    sub:"A maioria das mulheres passa anos tentando nomear o que sente. O Folia mapeia sua transição hormonal, conecta-a à sua pele e vida diária, e constrói um sistema de cuidado centrado em você.",
+    startBtn:"Começar a mapear meu perfil hormonal →",
+    learnMore:"Saiba mais sobre o Folia",
+    learnLess:"Fechar",
+    footNote:"3–4 minutos · Suas respostas, seu mapa · Protegido por HIPAA",
+    infoTitle:"Como o Folia funciona",
+    infoQ1:"O que é o Folia?", infoA1:"O Folia é um sistema corporal para a meia-idade — mapeia sua transição hormonal, cria um protocolo personalizado de pele e vida diária, e conecta você com um médico licenciado.",
+    infoQ2:"Quem analisa minhas respostas?", infoA2:"Um médico licenciado e certificado pela NAMS analisa seu perfil de forma assíncrona — sem necessidade de consulta. Eles tomam todas as decisões de prescrição de forma independente.",
+    infoQ3:"É confidencial?", infoA3:"Sim. Tudo que você compartilha é protegido pela HIPAA. Seus dados nunca são vendidos ou usados para publicidade.",
+    infoQ4:"E se eu quiser apenas informação, sem receita?", infoA4:"Tudo bem. O plano Folia Aware oferece seu mapa hormonal, protocolo de cuidados com a pele e acesso à guia de cuidados — sem receita necessária.",
+    infoQ5:"Quanto tempo leva a avaliação?", infoA5:"3 a 4 minutos. É conversacional — uma pergunta por vez. Você pode pausar e voltar.",
+    infoClose:"Entendi — iniciar meu perfil →",
+  },
+};
 const Shell = ({children}) => <div style={{fontFamily:"'DM Sans',sans-serif",maxWidth:680,margin:"0 auto",padding:"0 2rem",minHeight:"100vh"}}>{children}</div>;
-const Header = ({right}) => (
-  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 2rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
+const Header = ({right,lang,setLang,onInfo}) => (
+  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 1.5rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
     <div style={{display:"flex",alignItems:"center",gap:12}}>
-      <span onClick={()=>setView("welcome")} style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink,cursor:"pointer"}}>Folia</span>
-      <span style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:500}}>Perimenopause platform</span>
+      <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>Folia</span>
+      <span style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:500}}>Midlife body system</span>
     </div>
-    {right&&<span style={{fontSize:12,color:T.inkSoft}}>{right}</span>}
+    <div style={{display:"flex",alignItems:"center",gap:8}}>
+      {setLang&&(
+        <div style={{display:"flex",gap:2,background:T.cream,borderRadius:8,padding:3}}>
+          {Object.entries(LANGS).map(([code,l])=>(
+            <button key={code} onClick={()=>setLang(code)} style={{padding:"0.2rem 0.45rem",background:lang===code?T.ink:"transparent",color:lang===code?T.white:T.inkSoft,border:"none",borderRadius:5,fontSize:11,fontWeight:lang===code?500:400,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"}}>
+              {l.code}
+            </button>
+          ))}
+        </div>
+      )}
+      {onInfo&&<button onClick={onInfo} style={{width:28,height:28,borderRadius:"50%",background:T.cream,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"serif",flexShrink:0}}>?</button>}
+      {right&&<span style={{fontSize:12,color:T.inkSoft}}>{right}</span>}
+    </div>
   </div>
 );
 const Btn = ({onClick,disabled,children,color,outline}) => (
@@ -135,6 +254,10 @@ export default function Folia() {
   const [consent,setConsent] = useState({c1:false,c2:false,c3:false,c4:false,c5:false});
   const [activeTab,setActiveTab] = useState("timeline");
   const [selectedPlan,setSelectedPlan] = useState(null);
+  const [lang,setLang] = useState("en");
+  const [learnMore,setLearnMore] = useState(false);
+  const [infoOpen,setInfoOpen] = useState(false);
+  const t = TR[lang]||TR.en;
   const bottomRef = useRef(null);
   const scroll = () => setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),50);
 
@@ -145,7 +268,7 @@ export default function Folia() {
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
-        headers:{"Content-Type":"application/json","x-api-key":import.meta.env.VITE_ANTHROPIC_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        headers:{"Content-Type":"application/json","x-api-key":"YOUR_API_KEY_HERE","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
         body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,system:SYSTEM_PROMPT,messages:history}),
       });
       const data = await res.json();
@@ -178,42 +301,59 @@ export default function Folia() {
   const ph = profile ? (PHASES[profile.phase]||PHASES["early"]) : null;
   const recommendedPlan = profile ? (PLANS.find(p=>p.phases.includes(profile.phase)&&p.recommended) || PLANS.find(p=>p.phases.includes(profile.phase)) || PLANS[1]) : PLANS[1];
 
+  // ── INFO DRAWER ───────────────────────────────────────────
+  const InfoDrawer = () => !infoOpen ? null : (
+    <div style={{position:"fixed",top:0,right:0,width:"min(380px,100vw)",height:"100vh",background:T.surface,boxShadow:"-4px 0 24px rgba(0,0,0,0.12)",zIndex:1000,overflowY:"auto",padding:"1.5rem 1.5rem 3rem"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.5rem",paddingBottom:"1rem",borderBottom:`1px solid ${T.border}`}}>
+        <span style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:T.ink}}>{t.infoTitle}</span>
+        <button onClick={()=>setInfoOpen(false)} style={{background:"none",border:"none",fontSize:22,color:T.inkSoft,cursor:"pointer",lineHeight:1,padding:"0 4px"}}>×</button>
+      </div>
+      {[[t.infoQ1,t.infoA1],[t.infoQ2,t.infoA2],[t.infoQ3,t.infoA3],[t.infoQ4,t.infoA4],[t.infoQ5,t.infoA5]].map(([q,a],i)=>(
+        <div key={i} style={{marginBottom:"1.25rem",paddingBottom:"1.25rem",borderBottom:i<4?`1px solid ${T.border}`:"none"}}>
+          <p style={{fontSize:13,fontWeight:500,color:T.ink,marginBottom:"0.4rem"}}>{q}</p>
+          <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300}}>{a}</p>
+        </div>
+      ))}
+      <button onClick={()=>setInfoOpen(false)} style={{width:"100%",padding:"0.875rem",background:T.ink,color:T.white,border:"none",borderRadius:12,fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",marginTop:"0.5rem"}}>{t.infoClose}</button>
+    </div>
+  );
+
   // ── WELCOME ──────────────────────────────────────────────
   if(view==="welcome") return (
-    <Shell><style>{G}</style><Header/>
+    <Shell><style>{G}</style>
+      <InfoDrawer/>
+      <Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)}/>
       <div style={{marginBottom:"3rem"}}>
-        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:"1.25rem"}}>Perimenopause care, finally</p>
+        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:"1.25rem"}}>Your midlife skin + hormone system</p>
         <h1 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(38px,6vw,58px)",fontWeight:700,color:T.ink,lineHeight:1.08,letterSpacing:"-0.025em",marginBottom:"1.5rem"}}>
-          Your hormones changed,<br/><em style={{color:T.terra,fontStyle:"italic"}}>your care should too.</em>
+          {lang==="zh"?<>你的身体正在改变。<br/><em style={{color:T.terra,fontStyle:"italic"}}>你的系统也应该随之改变。</em></>:lang==="es"?<>Tu cuerpo está cambiando.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Tu sistema también debería.</em></>:lang==="pt"?<>Seu corpo está mudando.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Seu sistema também deveria.</em></>:<>Your body is changing.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Your system should too.</em></>}
         </h1>
-        <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:500,marginBottom:"2rem",fontWeight:300}}>
-          Most women wait 4–6 years for a diagnosis. Folia maps where you are, gets FDA-approved medication to your door in days, and follows up for the full year.
-        </p>
+        <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:500,marginBottom:"2rem",fontWeight:300}}>{t.sub}</p>
 
         {/* Features */}
         <div className="fu3" style={{marginBottom:"2.5rem"}}>
           <div style={{borderLeft:`3px solid ${T.terra}`,paddingLeft:"1.25rem",marginBottom:"1.5rem"}}>
-            <p style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Perimenopause care</p>
-            {["Hormonal phase assessment — conversational, 3 minutes","Same-day provider review — prescription issued without an appointment","Medication at your door in 4–6 days via pharmacy partner","Proactive care team — welcome call, consultations, quarterly reviews, all pre-scheduled"].map((t,i)=>(
+            <p style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Hormones + clinical care</p>
+            {["Perimenopause phase assessment — conversational, 3 minutes","Same-day provider review — prescription issued without an appointment","Medication at your door in 4–6 days via pharmacy partner","Proactive care team — welcome call, consultations, quarterly reviews, all pre-scheduled"].map((tx,i)=>(
               <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:"0.7rem"}}>
                 <span style={{fontFamily:"'Playfair Display',serif",fontSize:12,color:T.terra,fontWeight:700,minWidth:20,paddingTop:2}}>0{i+1}</span>
-                <span style={{fontSize:14,color:T.inkMid,lineHeight:1.55,fontWeight:300}}>{t}</span>
+                <span style={{fontSize:14,color:T.inkMid,lineHeight:1.55,fontWeight:300}}>{tx}</span>
               </div>
             ))}
           </div>
           <div style={{borderLeft:`3px solid ${T.border}`,paddingLeft:"1.25rem"}}>
-            <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Skin support</p>
-            {["Phase-matched skincare protocol — treating the hormonal root cause","Layer SPF kit included at your six-month milestone"].map((t,i)=>(
+            <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Skin + daily life</p>
+            {["Lifestyle-matched skincare protocol — sun exposure, environment, and routine","Layer SPF matched to your UV exposure — included at your six-month milestone","Daily life inputs — sleep, stress, work environment — built into your protocol"].map((tx,i)=>(
               <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",marginBottom:"0.7rem"}}>
                 <span style={{fontFamily:"'Playfair Display',serif",fontSize:12,color:T.inkSoft,fontWeight:700,minWidth:20,paddingTop:2}}>0{i+5}</span>
-                <span style={{fontSize:14,color:T.inkSoft,lineHeight:1.55,fontWeight:300}}>{t}</span>
+                <span style={{fontSize:14,color:T.inkSoft,lineHeight:1.55,fontWeight:300}}>{tx}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Stats */}
-        <div className="fu3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"2.5rem"}}>
+        <div className="fu3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"2rem"}}>
           {[{n:"73M",l:"U.S. women in perimenopause"},{n:"4–6yr",l:"Average wait for diagnosis"},{n:"4–6d",l:"Intake to medication"}].map(s=>(
             <div key={s.n} style={{padding:"1.25rem 1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"center"}}>
               <p style={{fontFamily:"'Playfair Display',serif",fontSize:24,fontWeight:700,color:T.terra,marginBottom:"0.4rem"}}>{s.n}</p>
@@ -222,17 +362,35 @@ export default function Folia() {
           ))}
         </div>
 
+        {/* Learn more toggle */}
+        <div className="fu3" style={{marginBottom:"1.5rem"}}>
+          <button onClick={()=>setLearnMore(v=>!v)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:learnMore?"10px 10px 0 0":"10px",padding:"0.7rem 1.25rem",fontSize:13,color:T.inkMid,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontWeight:400,width:"100%",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
+            <span>{learnMore ? t.learnLess : t.learnMore}</span>
+            <span style={{fontSize:18,color:T.terra,transform:learnMore?"rotate(180deg)":"none",transition:"transform 0.25s",lineHeight:1}}>⌄</span>
+          </button>
+          {learnMore&&(
+            <div style={{background:T.cream,borderRadius:"0 0 10px 10px",padding:"1.25rem 1.5rem",border:`1px solid ${T.border}`,borderTop:"none"}}>
+              {[[t.infoQ1,t.infoA1],[t.infoQ2,t.infoA2],[t.infoQ3,t.infoA3],[t.infoQ4,t.infoA4],[t.infoQ5,t.infoA5]].map(([q,a],i)=>(
+                <div key={i} style={{marginBottom:"1rem",paddingBottom:"1rem",borderBottom:i<4?`1px solid ${T.border}`:"none"}}>
+                  <p style={{fontSize:13,fontWeight:500,color:T.ink,marginBottom:"0.3rem"}}>{q}</p>
+                  <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300}}>{a}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Consent */}
         <div className="fu4" style={{padding:"1.25rem 1.5rem",background:T.cream,borderRadius:14,marginBottom:"1.75rem",display:"flex",gap:14,alignItems:"flex-start",borderLeft:`3px solid ${T.terra}`}}>
           <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{marginTop:4,width:16,height:16,accentColor:T.terra,flexShrink:0,cursor:"pointer"}}/>
           <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300}}>
-            I understand Folia connects me with independent licensed providers — not medical advice. I consent to Folia processing my responses under HIPAA. All clinical care uses only FDA-approved treatments at provider discretion.
+            I understand Folia connects me with independent licensed providers who make all prescribing decisions. I consent to my responses being used to build my hormone profile, protected under HIPAA.
           </p>
         </div>
 
         <div className="fu4">
-          <Btn onClick={startChat} disabled={!agreed}>Start my perimenopause assessment →</Btn>
-          <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"center"}}>3–4 minutes · Medically complete · HIPAA protected</p>
+          <Btn onClick={startChat} disabled={!agreed}>{t.startBtn}</Btn>
+          <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"center"}}>{t.footNote}</p>
         </div>
       </div>
     </Shell>
@@ -240,14 +398,14 @@ export default function Folia() {
 
   // ── CHAT ─────────────────────────────────────────────────
   if(view==="chat") return (
-    <Shell><style>{G}</style><Header right="Perimenopause intake"/>
+    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Perimenopause intake"/>
       <div style={{display:"flex",gap:6,marginBottom:"1.5rem"}}>
         {[0,1,2,3,4,5,6,7,8,9].map(i=>(
           <div key={i} style={{height:3,flex:1,borderRadius:2,background:i<Math.min(messages.filter(m=>m.role==="assistant").length,10)?T.terra:T.border,transition:"background 0.3s"}}/>
         ))}
       </div>
       <div style={{padding:"0.75rem 1rem",background:T.cream,borderRadius:10,borderLeft:`3px solid ${T.terra}`,marginBottom:"1.5rem"}}>
-        <p style={{fontSize:12,color:T.inkMid,fontWeight:300,lineHeight:1.6}}><strong style={{fontWeight:500}}>Perimenopause assessment</strong> — your licensed provider uses these answers to review your case. Answer honestly. Skin is the final question.</p>
+        <p style={{fontSize:12,color:T.inkMid,fontWeight:300,lineHeight:1.6}}><strong style={{fontWeight:500}}>Mapping your hormone profile</strong> — your answers build a picture of where you are in your transition. There are no wrong answers.</p>
       </div>
 
       <div>
@@ -291,18 +449,18 @@ export default function Folia() {
 
   // ── CONSENT (medical) ────────────────────────────────────
   if(view==="consent"&&profile) return (
-    <Shell><style>{G}</style><Header right="Review & confirm"/>
-      <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Before we generate your profile</p>
-      <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>One last step.</h2>
-      <p className="fu2" style={{fontSize:15,color:T.inkMid,lineHeight:1.75,marginBottom:"2rem",fontWeight:300}}>Your provider relies on these confirmations to review your case safely and legally.</p>
+    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Review & confirm"/>
+      <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Before we build your profile</p>
+      <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Almost there.</h2>
+      <p className="fu2" style={{fontSize:15,color:T.inkMid,lineHeight:1.75,marginBottom:"2rem",fontWeight:300}}>A few confirmations so your licensed provider can safely review your profile.</p>
 
       <div className="fu3" style={{display:"flex",flexDirection:"column",gap:"0.75rem",marginBottom:"2rem"}}>
         {[
-          {k:"c1", text:"The information I provided is accurate and complete to the best of my knowledge. I understand my provider relies on this to make safe prescribing decisions."},
-          {k:"c2", text:"I understand Folia connects me with independent licensed providers who make all prescribing decisions at their sole discretion. Folia does not practice medicine."},
-          {k:"c3", text:"I consent to my health information being shared with the licensed provider reviewing my case, protected under HIPAA."},
-          {k:"c4", text:"I understand hormone therapy carries risks and benefits my provider will discuss with me before I accept any prescription."},
-          {k:"c5", text:"I am 18 years of age or older and confirm this assessment reflects my own health information."},
+          {k:"c1", text:"Everything I shared is accurate and complete. I understand my provider uses this to make safe decisions about my care."},
+          {k:"c2", text:"I understand Folia connects me with independent licensed providers who make all prescribing decisions. Folia maps — providers prescribe."},
+          {k:"c3", text:"I'm okay with my profile being shared with the licensed provider reviewing my case, protected under HIPAA."},
+          {k:"c4", text:"I understand hormone therapy has risks and benefits my provider will walk me through before anything is prescribed."},
+          {k:"c5", text:"I am 18 or older and this profile reflects my own health."},
         ].map(item=>(
           <div key={item.k} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"1rem 1.25rem",background:consent[item.k]?T.cream:T.surface,border:`1px solid ${consent[item.k]?T.terra:T.border}`,borderRadius:12,cursor:"pointer",transition:"all 0.15s"}} onClick={()=>setConsent(p=>({...p,[item.k]:!p[item.k]}))}>
             <div style={{width:20,height:20,borderRadius:4,border:`2px solid ${consent[item.k]?T.terra:T.border}`,background:consent[item.k]?T.terra:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,transition:"all 0.15s"}}>
@@ -314,7 +472,7 @@ export default function Folia() {
       </div>
 
       <Btn onClick={()=>setView("results")} disabled={!allConsent}>
-        {allConsent?"Generate my perimenopause profile →":"Please confirm all items above"}
+        {allConsent?"Build my hormone profile →":"Please confirm all items above"}
       </Btn>
       <div style={{height:"2rem"}}/>
     </Shell>
@@ -322,10 +480,10 @@ export default function Folia() {
 
   // ── RESULTS ──────────────────────────────────────────────
   if(view==="results"&&profile) return (
-    <Shell><style>{G}</style><Header right="Your perimenopause profile"/>
+    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Your perimenopause profile"/>
       <div className="fu" style={{padding:"2rem",background:T.ink,borderRadius:20,marginBottom:"1.5rem",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:ph.color,opacity:0.12}}/>
-        <p style={{fontSize:11,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Your perimenopause stage</p>
+        <p style={{fontSize:11,color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Your hormone map</p>
         <span style={{...pill(ph.color+"30",ph.color),marginBottom:"1rem",display:"inline-block"}}>{ph.label}</span>
         <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:28,fontWeight:700,color:T.white,marginBottom:"0.75rem",lineHeight:1.2}}>{ph.short}</h2>
         <p style={{fontSize:14,color:"rgba(255,255,255,0.6)",lineHeight:1.75,fontWeight:300}}>{ph.desc}</p>
@@ -334,18 +492,18 @@ export default function Folia() {
       {/* Clinical flags */}
       {profile.contraindications?.length>0&&!profile.contraindications.every(c=>!c||c==="none")&&(
         <div style={{padding:"1rem 1.25rem",background:"#FBF5EA",border:`1px solid #E8C8A0`,borderRadius:12,marginBottom:"1.25rem"}}>
-          <p style={{fontSize:13,color:"#8A5A1A",lineHeight:1.65,fontWeight:300}}><strong style={{fontWeight:500}}>For your provider:</strong> You mentioned health history that may affect which options are appropriate. Your provider will review all safe alternatives.</p>
+          <p style={{fontSize:13,color:"#8A5A1A",lineHeight:1.65,fontWeight:300}}><strong style={{fontWeight:500}}>A note for your provider:</strong> You mentioned some health history worth discussing. Your provider will map out every option that's right for you — there's always a path forward.</p>
         </div>
       )}
       {profile.medications?.includes("tamoxifen")&&(
         <div style={{padding:"1rem 1.25rem",background:"#FBF5EA",border:`1px solid #E8C8A0`,borderRadius:12,marginBottom:"1.25rem"}}>
-          <p style={{fontSize:13,color:"#8A5A1A",lineHeight:1.65,fontWeight:300}}><strong style={{fontWeight:500}}>Important:</strong> Tamoxifen and estrogen cannot be taken together. Your provider will discuss non-hormonal options that are safe and effective.</p>
+          <p style={{fontSize:13,color:"#8A5A1A",lineHeight:1.65,fontWeight:300}}><strong style={{fontWeight:500}}>Important:</strong> Tamoxifen and estrogen can't be combined. Your provider will map out non-hormonal options that work just as well for your symptoms.</p>
         </div>
       )}
 
       {profile.symptoms?.length>0&&(
         <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:"1.25rem 1.5rem",marginBottom:"1.25rem"}}>
-          <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:"0.75rem"}}>Symptoms you mentioned</p>
+          <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:"0.75rem"}}>What your body is telling us</p>
           <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:profile.severity?"0.75rem":0}}>
             {profile.symptoms.map(s=><span key={s} style={pill(T.rosePale,T.rose,false)}>{s}</span>)}
           </div>
@@ -354,7 +512,7 @@ export default function Folia() {
       )}
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:"2rem"}}>
-        {[{label:"Perimenopause stage",value:ph.label},{label:"Medication to door",value:"4–6 days"},{label:"Clinical care",value:ph.urgency},{label:"Recommended plan",value:recommendedPlan.name}].map(m=>(
+        {[{label:"Hormone stage",value:ph.label},{label:"Medication to door",value:"4–6 days"},{label:"Care approach",value:ph.urgency},{label:"Recommended plan",value:recommendedPlan.name}].map(m=>(
           <div key={m.label} style={{padding:"1.25rem 1.5rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14}}>
             <p style={{fontSize:11,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.5rem"}}>{m.label}</p>
             <p style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontWeight:700,color:T.ink,lineHeight:1.2}}>{m.value}</p>
@@ -362,18 +520,18 @@ export default function Folia() {
         ))}
       </div>
 
-      <Btn onClick={()=>setView("pricing")}>Choose my plan →</Btn>
+      <Btn onClick={()=>setView("pricing")}>Build my care system →</Btn>
     </Shell>
   );
 
   // ── PRICING ──────────────────────────────────────────────
   if(view==="pricing"&&profile) return (
-    <Shell><style>{G}</style><Header right="Choose your plan"/>
-      <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Perimenopause care plans</p>
-      <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:34,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Your plan, matched<br/>to your phase.</h2>
+    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Choose your plan"/>
+      <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Your Folia system</p>
+      <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:34,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Choose the depth<br/>that fits where you are.</h2>
       <p className="fu2" style={{fontSize:15,color:T.inkMid,lineHeight:1.75,marginBottom:"0.75rem",fontWeight:300}}>Based on your profile, we recommend <strong style={{color:T.ink,fontWeight:500}}>{recommendedPlan.name}</strong>.</p>
       <div className="fu2" style={{padding:"0.875rem 1.25rem",background:ph.pale,borderRadius:12,borderLeft:`3px solid ${ph.color}`,marginBottom:"2rem"}}>
-        <p style={{fontSize:13,color:T.inkMid,fontWeight:300,lineHeight:1.65}}>Your stage: <strong style={{color:T.ink,fontWeight:500}}>{ph.label}</strong> — clinical care is {ph.urgency}.</p>
+        <p style={{fontSize:13,color:T.inkMid,fontWeight:300,lineHeight:1.65}}>Your hormone map shows: <strong style={{color:T.ink,fontWeight:500}}>{ph.label}</strong> — care is {ph.urgency}.</p>
       </div>
 
       <div className="fu3" style={{display:"flex",flexDirection:"column",gap:"1rem",marginBottom:"1.5rem"}}>
@@ -412,19 +570,21 @@ export default function Folia() {
         <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300}}>Your provider review begins immediately. Medication can ship before your trial ends. Cancel before day 7 — no charge.</p>
       </div>
 
-      <Btn onClick={()=>setView("protocol")}>Continue to my protocol →</Btn>
+      <Btn onClick={()=>setView("protocol")}>See my full protocol →</Btn>
       <div style={{height:"2.5rem"}}/>
     </Shell>
   );
 
-  // ── PROTOCOL ─────────────────────────────────────────────
   if(view==="protocol"&&profile){
     const recs=getRecs(profile.skinConcern);
+    const spfRec=getSunRec(profile.sunExposure||"");
+    const sleepNote=SLEEP_RECS[profile.sleepStress?.includes("okay")?"okay":profile.sleepStress?.includes("moderate")?"moderate":profile.sleepStress?.includes("significantly")?"affected":"high"]||SLEEP_RECS.moderate;
+    const routineNote=ROUTINE_RECS[profile.skincareRoutine?.includes("minimal")?"minimal":profile.skincareRoutine?.includes("layered")?"layered":profile.skincareRoutine?.includes("none")?"none":"basic"]||ROUTINE_RECS.basic;
     return(
-      <Shell><style>{G}</style><Header right="Your protocol"/>
-        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Personalized perimenopause protocol</p>
-        <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:34,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Perimenopause first.<br/><span style={{color:T.inkSoft,fontWeight:400,fontSize:24,fontStyle:"italic"}}>Skin supported.</span></h2>
-        <p className="fu2" style={{fontSize:15,color:T.inkMid,lineHeight:1.75,marginBottom:"2.5rem",fontWeight:300}}>Medication reviewed and issued same day. At your door in 4–6 days. Your care team follows up — always.</p>
+      <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Your protocol"/>
+        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Your midlife body system</p>
+        <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:34,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Hormones first.<br/><span style={{color:T.inkSoft,fontWeight:400,fontSize:24,fontStyle:"italic"}}>Skin + life, connected.</span></h2>
+        <p className="fu2" style={{fontSize:15,color:T.inkMid,lineHeight:1.75,marginBottom:"2.5rem",fontWeight:300}}>Your protocol is built from three inputs: your phase, your daily life, and your skin. Everything is connected.</p>
 
         {/* Fulfillment */}
         <div className="fu3" style={{background:T.ink,borderRadius:20,padding:"1.75rem",marginBottom:"1.25rem"}}>
@@ -433,7 +593,7 @@ export default function Folia() {
             {step:"01",time:"Today",label:"Provider reviews your profile",detail:"Licensed provider reviews your full medical intake asynchronously — no appointment. Specialist offered if your history requires it."},
             {step:"02",time:"Same day",label:"Prescription issued",detail:"FDA-approved HRT prescribed at provider discretion. Routed directly to pharmacy partner."},
             {step:"03",time:"48 hours",label:"Medication ships",detail:"Estradiol patch, gel, spray, or progesterone — shipped to your door with your personalized protocol card."},
-            {step:"04",time:"Day 4–6",label:"Medication at your door",detail:"Tracking sent to your phone. Welcome kit includes your protocol card and a Layer SPF sample."},
+            {step:"04",time:"Day 4–6",label:"Medication at your door",detail:"Tracking sent to your phone. Welcome kit includes your protocol card and a Layer SPF sample matched to your UV exposure."},
           ].map((s,i)=>(
             <div key={i} style={{display:"flex",gap:16,paddingBottom:i<3?"1.25rem":0,marginBottom:i<3?"1.25rem":0,borderBottom:i<3?"1px solid rgba(255,255,255,0.08)":"none"}}>
               <div style={{textAlign:"center",minWidth:40}}>
@@ -450,6 +610,35 @@ export default function Folia() {
             <button style={{width:"100%",padding:"1rem",background:T.terra,color:T.white,border:"none",borderRadius:12,fontSize:15,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Get my prescription reviewed →</button>
             <p style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:"0.75rem",textAlign:"center",fontWeight:300}}>No appointment needed. Specialist offered if clinically indicated.</p>
           </div>
+        </div>
+
+        {/* Layer SPF — UV matched */}
+        <div style={{background:T.surface,border:`2px solid ${T.terra}`,borderRadius:20,padding:"1.75rem",marginBottom:"1.25rem"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:"0.75rem"}}>
+            <span style={{...pill(T.terraLight,T.terra,true)}}>{spfRec.urgency}</span>
+            <span style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em"}}>{spfRec.label}</span>
+          </div>
+          <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:T.ink,marginBottom:"0.5rem"}}>Layer SPF — matched to your sun exposure</h3>
+          <p style={{fontSize:14,color:T.inkMid,lineHeight:1.75,marginBottom:"1rem",fontWeight:300}}>{spfRec.rec}</p>
+          <p style={{fontSize:12,color:T.inkSoft,lineHeight:1.65,fontWeight:300,fontStyle:"italic"}}>Tinosorb S is the only UV filter with published evidence for preventing melasma and photoaging in estrogen-depleted skin. Your Layer SPF kit ships at your six-month milestone.</p>
+        </div>
+
+        {/* Lifestyle protocol */}
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:20,padding:"1.75rem",marginBottom:"1.25rem"}}>
+          <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:"1.25rem"}}>Your daily life protocol</p>
+          {[
+            {label:"Sleep + stress", note:sleepNote, icon:"◐"},
+            {label:"Skincare routine", note:routineNote, icon:"◈"},
+            {label:"Work + environment", note:`${profile.workEnvironment||"Your environment"} — your protocol accounts for your daily UV and stress exposure.`, icon:"○"},
+          ].map((item,i)=>(
+            <div key={i} style={{display:"flex",gap:14,padding:"0.875rem 0",borderBottom:i<2?`1px solid ${T.border}`:"none"}}>
+              <span style={{color:T.terra,fontSize:16,flexShrink:0,marginTop:1}}>{item.icon}</span>
+              <div>
+                <p style={{fontSize:13,fontWeight:500,color:T.ink,marginBottom:"0.3rem"}}>{item.label}</p>
+                <p style={{fontSize:13,color:T.inkSoft,lineHeight:1.6,fontWeight:300}}>{item.note}</p>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Skin */}
@@ -469,7 +658,7 @@ export default function Folia() {
           <p style={{fontSize:11,color:T.inkSoft,marginTop:"1rem",padding:"0.75rem 1rem",background:T.cream,borderRadius:8,fontWeight:300,lineHeight:1.65}}>Cosmetic recommendations only. Prescription topical treatments discussed with your provider.</p>
         </div>
 
-        <Btn onClick={()=>setView("onboarding")}>Continue to my care plan →</Btn>
+        <Btn onClick={()=>setView("onboarding")}>See my care plan →</Btn>
         <div style={{height:"2.5rem"}}/>
       </Shell>
     );
@@ -477,7 +666,7 @@ export default function Folia() {
 
   // ── ONBOARDING MESSAGE ───────────────────────────────────
   if(view==="onboarding"&&profile) return(
-    <Shell><style>{G}</style><Header right="Welcome to Folia"/>
+    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Welcome to Folia"/>
       <div className="fu" style={{background:T.ink,borderRadius:20,padding:"2rem",marginBottom:"1.5rem",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:T.terra,opacity:0.1}}/>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:"1.5rem"}}>
@@ -487,22 +676,22 @@ export default function Folia() {
             <p style={{fontSize:12,color:"rgba(255,255,255,0.45)",fontWeight:300}}>Your Folia care guide</p>
           </div>
         </div>
-        <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.white,fontWeight:600,lineHeight:1.3,marginBottom:"1.25rem",fontStyle:"italic"}}>"You just did something most women wait years to do."</p>
-        <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300,marginBottom:"1rem"}}>I've reviewed your perimenopause profile. Your provider is reviewing it now and will issue a prescription today if appropriate — no appointment needed.</p>
-        <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300,marginBottom:"1rem"}}>I'll call you personally on day 7. Just 10 minutes, no agenda — I want to know how you're feeling and make sure you have everything you need.</p>
-        <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300}}>Your entire care year is already planned. You don't have to remember to follow up — we'll be there before you need to ask.</p>
+        <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.white,fontWeight:600,lineHeight:1.3,marginBottom:"1.25rem",fontStyle:"italic"}}>"You just mapped something most women spend years trying to name."</p>
+        <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300,marginBottom:"1rem"}}>I've looked at your hormone map. Your provider is reviewing it now — they'll reach out today, no appointment needed.</p>
+        <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300,marginBottom:"1rem"}}>I'll call you on day 7. Ten minutes, no agenda. I just want to know how you're settling in and make sure everything makes sense.</p>
+        <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300}}>Your full care year is already mapped out. You don't have to chase anything — we'll show up before you need to ask.</p>
         <div style={{marginTop:"1.5rem",paddingTop:"1.5rem",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
           <p style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:300}}>Sarah · Folia Care Team · care@folia.com</p>
         </div>
       </div>
 
       <div className="fu1" style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:20,padding:"1.5rem",marginBottom:"1.25rem"}}>
-        <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:"1.25rem"}}>What happens next</p>
+        <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:"1.25rem"}}>Your next 7 days, mapped</p>
         {[
-          {time:"Next 2–4 hrs",label:"Provider reviews your profile",detail:"You'll be notified when complete. Prescription issued if appropriate — specialist offered if needed.",icon:"●",color:T.terra},
-          {time:"Tonight",label:"Tracking number in your inbox",detail:"Medication ships within 48hrs. FDA-approved formulation selected by your provider.",icon:"●",color:T.terra},
-          {time:"Day 4–6",label:"Welcome kit at your door",detail:"Medication + protocol card + Layer SPF sample. Everything you need to start with confidence.",icon:"○",color:T.inkSoft},
-          {time:"Day 7",label:"Sarah calls you",detail:"10 minutes. No agenda. Just making sure you have what you need.",icon:"◈",color:T.rose},
+          {time:"Next 2–4 hrs",label:"Provider maps your care options",detail:"Your hormone profile is reviewed. If a prescription makes sense, it's issued same day — no appointment.",icon:"●",color:T.terra},
+          {time:"Tonight",label:"Tracking number in your inbox",detail:"Medication ships within 48 hours. Your Layer SPF sample is matched to your UV profile.",icon:"●",color:T.terra},
+          {time:"Day 4–6",label:"Your system arrives at the door",detail:"Medication + protocol card + Layer SPF sample. Everything you need to start, already organized.",icon:"○",color:T.inkSoft},
+          {time:"Day 7",label:"Sarah calls",detail:"Ten minutes. No agenda. Just checking in.",icon:"◈",color:T.rose},
         ].map((item,i)=>(
           <div key={i} style={{display:"flex",gap:14,paddingBottom:i<3?"1.1rem":0,marginBottom:i<3?"1.1rem":0,borderBottom:i<3?`1px solid ${T.border}`:"none"}}>
             <div style={{minWidth:70}}><p style={{fontSize:11,color:item.color,fontWeight:500,lineHeight:1.4}}>{item.time}</p></div>
@@ -523,9 +712,9 @@ export default function Folia() {
   if(view==="dashboard"&&profile){
     const timeline=getCareTimeline();
     return(
-      <Shell><style>{G}</style><Header right="Dashboard"/>
+      <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Dashboard"/>
         <div style={{marginBottom:"0.5rem"}}><span style={pill(ph.pale,ph.color)}>{ph.label}</span></div>
-        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",margin:"1rem 0 0.4rem",lineHeight:1.1}}>Your care, planned.</h2>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",margin:"1rem 0 0.4rem",lineHeight:1.1}}>Your system, running.</h2>
         <p style={{fontSize:15,color:T.inkSoft,fontWeight:300,lineHeight:1.65,marginBottom:"2rem"}}>Every touchpoint pre-scheduled. We show up before you need to ask.</p>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"1.75rem"}}>
@@ -578,10 +767,10 @@ export default function Folia() {
         {activeTab==="symptoms"&&(
           <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:20,padding:"1.5rem",marginBottom:"1.25rem"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.25rem"}}>
-              <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em"}}>Perimenopause symptom tracker</p>
+              <p style={{fontSize:11,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.12em"}}>Hormone symptom map</p>
               <span style={pill(T.terraLight,T.terra,true)}>Primary</span>
             </div>
-            <p style={{fontSize:13,color:T.inkSoft,fontWeight:300,marginBottom:"1.25rem",lineHeight:1.6}}>Log daily. At 14 days we compare to your baseline and show you exactly what's changed.</p>
+            <p style={{fontSize:13,color:T.inkSoft,fontWeight:300,marginBottom:"1.25rem",lineHeight:1.6}}>Log daily. At 14 days your map updates — you'll see exactly what's shifting and what's holding steady.</p>
             {(profile.symptoms?.slice(0,4)||["Hot flashes","Sleep quality","Mood","Brain fog"]).map((sym,i)=>(
               <div key={sym} style={{marginBottom:"1.25rem"}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:"0.5rem"}}>
@@ -636,7 +825,7 @@ export default function Folia() {
         </div>
 
         <div style={{textAlign:"center",padding:"0.5rem 0 3rem"}}>
-          <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.ink,fontStyle:"italic",marginBottom:"0.5rem"}}>Always scheduled. Never reactive.</p>
+          <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.ink,fontStyle:"italic",marginBottom:"0.5rem"}}>Your body always knew. Now it has a map.</p>
           <p style={{fontSize:13,color:T.inkSoft,lineHeight:1.75,maxWidth:400,margin:"0 auto",fontWeight:300}}>You matter enough for us to show up even when everything is fine.</p>
         </div>
       </Shell>
