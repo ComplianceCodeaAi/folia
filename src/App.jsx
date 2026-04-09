@@ -26,12 +26,21 @@ const G = `
   .fu4{animation:fadeUp 0.45s 0.32s ease both;}
 `;
 
-const SYSTEM_PROMPT = `You are Sarah, Folia's perimenopause care guide. You are warm, grounded, and emotionally intelligent — never clinical, never robotic. You speak like a trusted modern wellness advisor.
+const SYSTEM_PROMPT = `You are Amara, Folia's perimenopause care guide. You are warm, grounded, and emotionally intelligent — never clinical, never robotic. You speak like a trusted modern wellness advisor.
 
 Your FIRST message must always follow this exact structure — no greeting, go straight in:
 - 1 sentence of emotional recognition (e.g. "Something shifted, and you noticed it.")
-- 1 sentence of normalization (e.g. "Most women spend years trying to name exactly what you're feeling.")
+- 1 sentence of normalization that references the system's failure to catch women early (e.g. "The woman you've always been is still here — she's just navigating a shift that most doctors aren't trained to recognize yet.")
 - 1 short transition into the first question (e.g. "I'd love to understand where you are right now — what's your age range?")
+
+IMPORTANT CONTEXT FOR YOUR RESPONSES:
+- Less than 1% of U.S. doctors are certified in menopause care
+- 85% of women with perimenopause symptoms are not being treated
+- Perimenopause can begin a decade before the last period — while cycles are still regular and bloodwork looks normal
+- Folia catches women BEFORE the medical system identifies them — this is the core promise
+- When a woman says her doctor told her everything is fine, validate that this is common and expected — not a sign that nothing is wrong
+- Never frame perimenopause as something that only begins with irregular periods
+- Frame the intake as building a hormonal picture, not screening for a condition
 
 After the opening, collect ALL of the following across 10–12 exchanges. Maximum 2 sentences before options. One question at a time.
 
@@ -39,6 +48,7 @@ CLINICAL QUESTIONS (collect first — required for provider):
 1. Age range: 35–39 / 40–44 / 45–49 / 50 and older
 2. Cycle status: regular / irregular / no period 3–11 months / no period 12+ months
    → If "12+ months": also ask how long (1–2 years / 3–5 years / 5+ years)
+   → If "regular": acknowledge warmly that regular cycles don't rule out early hormonal transition
 3. Symptoms + severity: guide toward hot flashes, night sweats, sleep disruption, mood/anxiety, brain fog, low libido, vaginal dryness, urinary urgency, joint aches, palpitations, weight gain, skin/hair changes. Ask severity (mild/moderate/severe) in the same message.
 4. Uterus status: yes / hysterectomy / partial — explain this is one of the most important safety questions
 5. Medical history in one message — Personal: blood clots (DVT/PE), stroke or heart attack, breast cancer, endometrial/ovarian cancer, liver disease, unexplained vaginal bleeding in past 6 months. Family (mother/sister): breast cancer before 50, blood clots, heart attack before 60
@@ -56,13 +66,14 @@ SKIN QUESTION:
 CRITICAL FLAGS:
 - Tamoxifen: "Important — estrogen and tamoxifen cannot be taken together. Your provider will discuss non-hormonal options."
 - Blood clots, stroke, breast cancer: "Thank you for sharing this. Some standard options may not be right for you, but your provider will discuss every safe alternative."
+- If woman says doctor told her everything is fine: "That's one of the most common experiences in this transition. Hormones can fluctuate significantly while bloodwork still looks normal — that's exactly why Folia maps the full picture, not just the numbers."
 
 After collecting everything, output on its own line:
 PROFILE_JSON:{"ageRange":"40-44","cycle":"regular","cycleMonths":"","symptoms":[],"severity":"moderate","hasUterus":true,"contraindications":[],"familyHistory":[],"medications":[],"bloodPressure":"normal","smoking":"no","sunExposure":"moderate","workEnvironment":"office","sleepStress":"moderate","skincareRoutine":"basic","skinConcern":"dryness","hasProvider":false,"phase":"early"}
 
 Phase logic: pre-peri=regular cycle + mild + age<42; early=irregular OR 2-3 moderate symptoms; mid=3+ symptoms OR severe; late=stopped 12mo+ OR multiple severe
 
-After PROFILE_JSON write one warm closing line like "You're in exactly the right place — let's build your system."
+After PROFILE_JSON write one warm closing line that acknowledges she has done something most women wait years to do.
 
 After each question include quick-reply options on the last line:
 REPLIES:Option A|Option B|Option C|Option D
@@ -79,10 +90,10 @@ function parseMsg(raw) {
 }
 
 const PHASES = {
-  "pre-peri":{ label:"Pre-perimenopausal", short:"Early hormonal shift", color:T.sage, pale:T.sagePale, urgency:"proactive", desc:"Hormonal fluctuations are beginning — estrogen starting to vary cycle to cycle. You're identifying this early, which is exactly when care has the most impact." },
-  "early":   { label:"Early perimenopause", short:"Active transition", color:T.terra, pale:T.terraLight, urgency:"recommended", desc:"Classic early perimenopause signals driven by estrogen fluctuation. You're in the ideal window to establish care and begin treatment." },
-  "mid":     { label:"Mid perimenopause", short:"Active estrogen decline", color:"#A0622A", pale:"#FAF0E6", urgency:"important", desc:"Estrogen decline is now consistent. Symptoms are more persistent. Clinical care at this stage has meaningful long-term health implications." },
-  "late":    { label:"Late perimenopause", short:"Menopause transition", color:T.inkMid, pale:T.cream, urgency:"strongly recommended", desc:"The window where FDA-approved hormone therapy has its strongest evidence base for bone, cardiovascular, and cognitive health." },
+  "pre-peri":{ label:"Pre-perimenopausal", short:"Early hormonal shift", color:T.sage, pale:T.sagePale, urgency:"proactive", desc:"Hormonal fluctuations are beginning while cycles are still regular and bloodwork looks normal. Most women at this stage are told everything is fine. It isn't — and catching this early is exactly when care has the most impact." },
+  "early":   { label:"Early perimenopause", short:"Active transition", color:T.terra, pale:T.terraLight, urgency:"recommended", desc:"Classic early perimenopause signals driven by estrogen fluctuation. Most women wait 4–6 years for this to be named. You're in the ideal window to establish care and begin treatment." },
+  "mid":     { label:"Mid perimenopause", short:"Active estrogen decline", color:"#A0622A", pale:"#FAF0E6", urgency:"important", desc:"Estrogen decline is now consistent and symptoms more persistent. Only 25% of women at this stage are receiving clinical care. Clinical treatment now has meaningful long-term implications for bone, heart, and cognitive health." },
+  "late":    { label:"Late perimenopause", short:"Menopause transition", color:T.inkMid, pale:T.cream, urgency:"strongly recommended", desc:"The window where FDA-approved hormone therapy has its strongest evidence base. Despite this, less than 5% of eligible women are currently receiving treatment. Your care plan is built around the evidence — not the myths." },
 };
 
 const PLANS = [
@@ -140,8 +151,8 @@ const LANGS = {
 const TR = {
   en: {
     tagline:"Your body is changing. Your system should too.",
-    sub:"Most women spend years naming what they're feeling. Folia maps your hormonal transition, connects it to your skin and daily life, and builds a care system around you — not a symptom list.",
-    startBtn:"Start mapping my hormone profile →",
+    sub:"The woman you've always been is still here. She's just navigating a shift nobody prepared her for, in a body that's changing faster than the language we have to describe it. Folia gives her that language — and a way forward.",
+    startBtn:"I'm ready to understand →",
     learnMore:"Learn more about Folia",
     learnLess:"Close",
     footNote:"3–4 minutes · Your answers, your map · HIPAA protected",
@@ -151,12 +162,12 @@ const TR = {
     infoQ3:"Is this confidential?", infoA3:"Yes. Everything you share is protected under HIPAA. Your data is never sold or used for advertising.",
     infoQ4:"What if I just want information, not a prescription?", infoA4:"That's completely fine. The Folia Aware plan gives you your hormone map, skincare protocol, and care guide access — no prescription required.",
     infoQ5:"How long does the intake take?", infoA5:"3 to 4 minutes. It's conversational — one question at a time. You can pause and come back.",
-    infoClose:"Got it — start my profile →",
+    infoClose:"I'm ready to understand →",
   },
   es: {
     tagline:"Tu cuerpo está cambiando. Tu sistema también debería.",
     sub:"La mayoría de las mujeres pasan años intentando nombrar lo que sienten. Folia mapea tu transición hormonal, la conecta con tu piel y tu vida diaria, y construye un sistema de cuidado centrado en ti.",
-    startBtn:"Comenzar a mapear mi perfil hormonal →",
+    startBtn:"Estoy lista para entender →",
     learnMore:"Aprender más sobre Folia",
     learnLess:"Cerrar",
     footNote:"3–4 minutos · Tus respuestas, tu mapa · Protegido por HIPAA",
@@ -166,12 +177,12 @@ const TR = {
     infoQ3:"¿Es confidencial?", infoA3:"Sí. Todo lo que compartes está protegido bajo HIPAA. Tus datos nunca se venden ni se usan para publicidad.",
     infoQ4:"¿Qué si solo quiero información, no una receta?", infoA4:"Está perfectamente bien. El plan Folia Aware te da tu mapa hormonal, protocolo de piel y acceso a una guía de cuidado — sin receta necesaria.",
     infoQ5:"¿Cuánto tiempo toma la evaluación?", infoA5:"3 a 4 minutos. Es conversacional — una pregunta a la vez. Puedes pausar y regresar.",
-    infoClose:"Entendido — comenzar mi perfil →",
+    infoClose:"Estoy lista para entender →",
   },
   zh: {
     tagline:"你的身体正在改变。你的系统也应该随之改变。",
     sub:"大多数女性花了数年时间才能说清楚自己的感受。Folia 绘制你的激素变化图谱，将其与你的皮肤和日常生活联系起来，并围绕你建立一个护理系统。",
-    startBtn:"开始绘制我的激素档案 →",
+    startBtn:"我准备好了解了 →",
     learnMore:"了解更多关于 Folia",
     learnLess:"关闭",
     footNote:"3–4 分钟 · 你的答案，你的地图 · HIPAA 保护",
@@ -181,12 +192,12 @@ const TR = {
     infoQ3:"这是保密的吗？", infoA3:"是的。你分享的一切都受 HIPAA 保护。你的数据不会被出售或用于广告。",
     infoQ4:"如果我只想要信息，不需要处方呢？", infoA4:"完全没问题。Folia Aware 计划为你提供激素图谱、护肤方案和护理指导 — 无需处方。",
     infoQ5:"评估需要多长时间？", infoA5:"3 到 4 分钟。采用对话形式 — 每次一个问题。你可以暂停后再回来。",
-    infoClose:"明白了 — 开始我的档案 →",
+    infoClose:"我准备好了解了 →",
   },
   pt: {
     tagline:"Seu corpo está mudando. Seu sistema também deveria.",
     sub:"A maioria das mulheres passa anos tentando nomear o que sente. O Folia mapeia sua transição hormonal, conecta-a à sua pele e vida diária, e constrói um sistema de cuidado centrado em você.",
-    startBtn:"Começar a mapear meu perfil hormonal →",
+    startBtn:"Estou pronta para entender →",
     learnMore:"Saiba mais sobre o Folia",
     learnLess:"Fechar",
     footNote:"3–4 minutos · Suas respostas, seu mapa · Protegido por HIPAA",
@@ -196,14 +207,16 @@ const TR = {
     infoQ3:"É confidencial?", infoA3:"Sim. Tudo que você compartilha é protegido pela HIPAA. Seus dados nunca são vendidos ou usados para publicidade.",
     infoQ4:"E se eu quiser apenas informação, sem receita?", infoA4:"Tudo bem. O plano Folia Aware oferece seu mapa hormonal, protocolo de cuidados com a pele e acesso à guia de cuidados — sem receita necessária.",
     infoQ5:"Quanto tempo leva a avaliação?", infoA5:"3 a 4 minutos. É conversacional — uma pergunta por vez. Você pode pausar e voltar.",
-    infoClose:"Entendi — iniciar meu perfil →",
+    infoClose:"Estou pronta para entender →",
   },
 };
-const Shell = ({children}) => <div style={{fontFamily:"'DM Sans',sans-serif",maxWidth:680,margin:"0 auto",padding:"0 2rem",minHeight:"100vh"}}>{children}</div>;
+const Shell = ({children}) => <div style={{fontFamily:"'DM Sans',sans-serif",maxWidth:680,margin:"0 auto",padding:"0 2rem 4rem",minHeight:"100vh"}}>{children}</div>;
 const Header = ({right,lang,setLang,onInfo}) => (
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 1.5rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
-    <div style={{display:"flex",alignItems:"center",gap:12}}>
-      <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>Folia</span>
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <span style={{fontFamily:"'Playfair Display',serif",fontSize:36,fontWeight:700,color:T.ink,lineHeight:1}}>Folia</span>
+      <span style={{fontSize:10,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:500,lineHeight:1}}>Midlife Hormone System</span>
+    </div>
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       {setLang&&(
         <div style={{display:"flex",gap:2,background:T.cream,borderRadius:8,padding:3}}>
@@ -225,6 +238,34 @@ const Btn = ({onClick,disabled,children,color,outline}) => (
   </button>
 );
 
+const BottomNav = ({view,setView,profile,startChat,fabOpen,setFabOpen}) => {
+  const items = [
+    { label:"Home",    icon:"⌂", action:()=>{ setView("welcome"); setFabOpen(false); } },
+    { label:"Learn",   icon:"◎", action:()=>{ setView("learn"); setFabOpen(false); } },
+    { label:"Ask Amara", icon:"◈", action:()=>{ startChat(); setFabOpen(false); } },
+    { label:"My Care", icon:"♦", action:()=>{ if(profile){ setView("results"); setFabOpen(false); } }, locked:!profile },
+  ];
+  return (
+    <div style={{position:"fixed",bottom:24,right:24,zIndex:900,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:10}}>
+      {fabOpen&&items.map((item)=>(
+        <div key={item.label} className="fu" style={{display:"flex",alignItems:"center",gap:10,opacity:item.locked?0.4:1}}>
+          <span style={{fontSize:13,color:T.ink,background:T.surface,padding:"5px 14px",borderRadius:20,border:`1px solid ${T.border}`,fontFamily:"'DM Sans',sans-serif",fontWeight:400,whiteSpace:"nowrap",cursor:item.locked?"not-allowed":"pointer"}} onClick={item.locked?undefined:item.action}>{item.label}</span>
+          <div style={{width:38,height:38,borderRadius:"50%",background:T.cream,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:item.locked?"not-allowed":"pointer",flexShrink:0}} onClick={item.locked?undefined:item.action}>
+            <span style={{fontSize:14,color:T.terra,lineHeight:1}}>{item.icon}</span>
+          </div>
+        </div>
+      ))}
+      <div onClick={()=>setFabOpen(v=>!v)} style={{height:40,padding:"0 18px",background:T.ink,borderRadius:20,display:"flex",alignItems:"center",gap:8,cursor:"pointer",transition:"all 0.2s"}}>
+        {fabOpen
+          ? <span style={{fontSize:14,color:T.terra,lineHeight:1,fontWeight:300}}>✕</span>
+          : <div style={{display:"flex",flexDirection:"column",gap:3}}>{[0,1,2].map(i=><div key={i} style={{width:13,height:1.5,background:T.terra,borderRadius:1}}/>)}</div>
+        }
+        <span style={{fontSize:12,color:T.terra,fontWeight:500,fontFamily:"'DM Sans',sans-serif",letterSpacing:"0.06em"}}>{fabOpen?"Close":"Menu"}</span>
+      </div>
+    </div>
+  );
+};
+
 function getCareTimeline() {
   const add=(d)=>{ const dt=new Date(); dt.setDate(dt.getDate()+d); return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"}); };
   return [
@@ -232,7 +273,7 @@ function getCareTimeline() {
     {day:1,  date:add(1),  label:"Provider reviews your profile",sub:"Licensed provider reviews async — no appointment needed",  type:"active",    icon:"●", color:T.terra},
     {day:2,  date:add(2),  label:"Prescription issued",          sub:"Same day if approved. Specialist offered if needed.",      type:"pending",   icon:"○", color:T.terra},
     {day:5,  date:add(5),  label:"Medication at your door",      sub:"Ships within 48hrs. Tracking sent to your phone.",         type:"pending",   icon:"○", color:T.terra},
-    {day:7,  date:add(7),  label:"Welcome call with Sarah",      sub:"10 minutes. No agenda. Just making sure you have everything.", type:"scheduled",icon:"◈", color:T.rose},
+    {day:7,  date:add(7),  label:"Welcome call with Amara",      sub:"10 minutes. No agenda. Just making sure you have everything.", type:"scheduled",icon:"◈", color:T.rose},
     {day:14, date:add(14), label:"14-day symptom check-in",      sub:"How is your body responding? Quick app check-in.",        type:"scheduled", icon:"◈", color:T.inkSoft},
     {day:30, date:add(30), label:"First consultation",           sub:"Already booked. Provider reviews response + adjusts.",    type:"scheduled", icon:"◈", color:T.terra},
     {day:90, date:add(90), label:"Quarterly care review",         sub:"Provider + symptom comparison vs your baseline.",         type:"scheduled", icon:"◈", color:T.terra},
@@ -255,6 +296,8 @@ export default function Folia() {
   const [lang,setLang] = useState("en");
   const [learnMore,setLearnMore] = useState(false);
   const [infoOpen,setInfoOpen] = useState(false);
+  const [learnSection,setLearnSection] = useState(null);
+  const [fabOpen,setFabOpen] = useState(false);
   const t = TR[lang]||TR.en;
   const bottomRef = useRef(null);
   const scroll = () => setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),50);
@@ -317,69 +360,146 @@ export default function Folia() {
   );
 
   // ── WELCOME ──────────────────────────────────────────────
+  // ── LEARN SCREEN ─────────────────────────────────────────
+  if(view==="learn") return (
+    <Shell><style>{G}</style>
+      <Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Learn"/>
+      <InfoDrawer/>
+      <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Folia Education</p>
+      <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:T.ink,lineHeight:1.1,marginBottom:"2rem"}}>What you deserve<br/>to know.</h2>
+
+      {/* Care Gap */}
+      <div className="fu2" style={{marginBottom:"1rem",border:`1px solid ${T.border}`,borderRadius:14,overflow:"hidden"}}>
+        <button onClick={()=>setLearnSection(learnSection==="gap"?null:"gap")} style={{width:"100%",padding:"1.25rem 1.5rem",background:T.surface,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{textAlign:"left"}}>
+            <p style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:3}}>The care gap</p>
+            <p style={{fontSize:15,fontWeight:500,color:T.ink}}>Why most women wait years for answers</p>
+          </div>
+          <span style={{fontSize:18,color:T.terra,transform:learnSection==="gap"?"rotate(180deg)":"none",transition:"transform 0.25s",flexShrink:0,marginLeft:12}}>⌄</span>
+        </button>
+        {learnSection==="gap"&&(
+          <div style={{padding:"0 1.5rem 1.5rem",borderTop:`1px solid ${T.border}`}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,margin:"1.25rem 0"}}>
+              {[{n:"73M",l:"U.S. women in perimenopause or menopause"},{n:"<1%",l:"Of U.S. doctors certified in menopause care"},{n:"85%",l:"Of women with symptoms not being treated"}].map(s=>(
+                <div key={s.n} style={{padding:"0.875rem 0.75rem 0.875rem 0.875rem",background:T.cream,borderLeft:`3px solid ${T.terra}`}}>
+                  <p style={{fontFamily:"'Playfair Display',serif",fontSize:24,fontWeight:700,color:T.terra,marginBottom:4,lineHeight:1}}>{s.n}</p>
+                  <p style={{fontSize:11,color:T.inkSoft,lineHeight:1.5,fontWeight:300}}>{s.l}</p>
+                </div>
+              ))}
+            </div>
+            <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300,marginBottom:"0.75rem"}}>Less than 1% of U.S. doctors hold a menopause certification. Only 31% of OB/GYN residency programs include a menopause curriculum. Less than 7% of residents feel prepared to support a woman in perimenopause.</p>
+            <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300,marginBottom:"0.75rem"}}>60% of women with significant symptoms never seek care. Of those who do, only 25% are actually treated. That means roughly 85% of women experiencing real hormonal symptoms are going without clinical support.</p>
+            <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300,marginBottom:"1rem"}}>Perimenopause can begin a decade before your last period. In the earliest stage, cycles are still regular. Bloodwork looks normal. A doctor will tell you everything is fine.</p>
+            <div style={{padding:"1rem",background:T.ink,borderRadius:10}}>
+              <p style={{fontSize:13,color:T.white,lineHeight:1.65,fontWeight:300}}>Folia is built for <strong style={{color:T.terra,fontWeight:500}}>that</strong> woman — the one the system hasn't caught yet. Most perimenopause assessments begin with one question: has your cycle changed? Folia doesn't. <strong style={{color:T.white,fontWeight:500}}>If your periods are still regular and your doctor says everything looks fine, this intake was built specifically for you.</strong></p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Your Protocol */}
+      <div className="fu2" style={{marginBottom:"1rem",border:`1px solid ${T.border}`,borderRadius:14,overflow:"hidden"}}>
+        <button onClick={()=>setLearnSection(learnSection==="protocol"?null:"protocol")} style={{width:"100%",padding:"1.25rem 1.5rem",background:T.surface,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{textAlign:"left"}}>
+            <p style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:3}}>Your protocol</p>
+            <p style={{fontSize:15,fontWeight:500,color:T.ink}}>Hormones, skin, and daily life — connected</p>
+          </div>
+          <span style={{fontSize:18,color:T.terra,transform:learnSection==="protocol"?"rotate(180deg)":"none",transition:"transform 0.25s",flexShrink:0,marginLeft:12}}>⌄</span>
+        </button>
+        {learnSection==="protocol"&&(
+          <div style={{padding:"0 1.5rem 1.5rem",borderTop:`1px solid ${T.border}`}}>
+            <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300,margin:"1.25rem 0 0.75rem"}}>Perimenopause is a transition, not a moment. Folia translates your symptoms into a clear hormonal picture — and tells you exactly what your body needs next.</p>
+            {[["Hormone health","Folia maps your symptoms into a clear hormonal picture — changes in estrogen and progesterone, why sleep, mood, and energy shift, how your cycle reflects your current phase."],["Your personalized protocol","Built around your profile. Hormone therapy if appropriate, non-hormonal options, sleep, mood, skin, and hair — all matched to your history and safety."],["Skin + sun care","Estrogen plays a direct role in your skin's moisture barrier, collagen production, and UV response. Your protocol treats the source, not just the surface."],["Ongoing care system","Folia is not just a prescription. Structured follow-ups, care touchpoints, and continuous adjustments — designed to support you through every phase."]].map(([title,desc],i)=>(
+              <div key={i} style={{padding:"0.875rem 0",borderBottom:i<3?`1px solid ${T.border}`:"none"}}>
+                <p style={{fontSize:14,fontWeight:500,color:T.ink,marginBottom:4}}>{title}</p>
+                <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300}}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* FAQs */}
+      <div className="fu3" style={{marginBottom:"2rem",border:`1px solid ${T.border}`,borderRadius:14,overflow:"hidden"}}>
+        <button onClick={()=>setLearnSection(learnSection==="faq"?null:"faq")} style={{width:"100%",padding:"1.25rem 1.5rem",background:T.surface,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{textAlign:"left"}}>
+            <p style={{fontSize:11,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:3}}>Common questions</p>
+            <p style={{fontSize:15,fontWeight:500,color:T.ink}}>What women ask before they start</p>
+          </div>
+          <span style={{fontSize:18,color:T.terra,transform:learnSection==="faq"?"rotate(180deg)":"none",transition:"transform 0.25s",flexShrink:0,marginLeft:12}}>⌄</span>
+        </button>
+        {learnSection==="faq"&&(
+          <div style={{padding:"0 1.5rem 1.5rem",borderTop:`1px solid ${T.border}`}}>
+            {[[t.infoQ1,t.infoA1],[t.infoQ2,t.infoA2],[t.infoQ3,t.infoA3],[t.infoQ4,t.infoA4],[t.infoQ5,t.infoA5]].map(([q,a],i)=>(
+              <div key={i} style={{padding:"1rem 0",borderBottom:i<4?`1px solid ${T.border}`:"none"}}>
+                <p style={{fontSize:14,fontWeight:500,color:T.ink,marginBottom:4}}>{q}</p>
+                <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300}}>{a}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Btn onClick={()=>setView("welcome")}>I'm ready to understand →</Btn>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
+    </Shell>
+  );
+
   if(view==="welcome") return (
     <Shell><style>{G}</style>
       <InfoDrawer/>
       <Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)}/>
       <div style={{marginBottom:"3rem"}}>
-        <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.18em",marginBottom:"1.25rem"}}>Folia Midlife Hormone System</p>
         <h1 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(38px,6vw,58px)",fontWeight:700,color:T.ink,lineHeight:1.08,letterSpacing:"-0.025em",marginBottom:"1.5rem"}}>
           {lang==="zh"?<>你的身体正在改变。<br/><em style={{color:T.terra,fontStyle:"italic"}}>你的系统也应该随之改变。</em></>:lang==="es"?<>Tu cuerpo está cambiando.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Tu sistema también debería.</em></>:lang==="pt"?<>Seu corpo está mudando.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Seu sistema também deveria.</em></>:<>Your body is changing.<br/><em style={{color:T.terra,fontStyle:"italic"}}>Your system should too.</em></>}
         </h1>
-        <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.75,maxWidth:520,marginBottom:"2rem",fontWeight:300}}>
-          Most women spend years trying to name what's happening. Folia maps your hormonal transition, identifies your stage, and builds a care plan that combines clinical treatment, ongoing support, and targeted skin care.
+        <p className="fu2" style={{fontSize:17,color:T.inkMid,lineHeight:1.85,maxWidth:520,marginBottom:"2rem",fontWeight:300}}>
+          The woman you've always been is still here. She's just navigating a shift nobody prepared her for, in a body that's changing faster than the language we have to describe it. Folia gives her that language — and a way forward.
         </p>
 
-        {/* Four steps — compact, titles only */}
+        {/* Four steps — B2: terra left border, title + description */}
         <div className="fu3" style={{marginBottom:"2rem"}}>
-          <p style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"1rem"}}>Hormone care, clinically guided</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <p style={{fontSize:12,fontWeight:700,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"1rem"}}>Hormone care, clinically guided</p>
+          <div style={{borderLeft:`2px solid ${T.terra}`,paddingLeft:"1rem",display:"flex",flexDirection:"column",gap:0}}>
             {[
-              ["01","Precision assessment"],
-              ["02","Provider-reviewed care"],
-              ["03","Treatment, delivered"],
-              ["04","Ongoing support system"],
-            ].map(([n,title])=>(
-              <div key={n} style={{padding:"1rem 1.1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,display:"flex",gap:10,alignItems:"flex-start"}}>
-                <span style={{fontFamily:"'Playfair Display',serif",fontSize:11,color:T.terra,fontWeight:700,flexShrink:0,paddingTop:1}}>{n}</span>
-                <span style={{fontSize:13,color:T.inkMid,lineHeight:1.5,fontWeight:400}}>{title}</span>
+              ["01","Precision assessment","Identifies your stage in minutes — based on cycle changes, symptoms, and risk profile."],
+              ["02","Provider-reviewed care","Licensed clinicians review your case the same day — no appointment needed."],
+              ["03","Treatment, delivered","Prescriptions issued and shipped to your door within days."],
+              ["04","Ongoing support system","Structured follow-ups and care touchpoints through every phase."],
+            ].map(([n,title,desc],i)=>(
+              <div key={n} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"0.875rem 0",borderBottom:i<3?`1px solid ${T.border}`:"none"}}>
+                <span style={{fontFamily:"'Playfair Display',serif",fontSize:13,fontWeight:700,color:T.terra,flexShrink:0,minWidth:20}}>{n}</span>
+                <div>
+                  <p style={{fontSize:14,fontWeight:500,color:T.ink,margin:"0 0 3px"}}>{title}</p>
+                  <p style={{fontSize:13,color:T.inkMid,fontWeight:300,lineHeight:1.6,margin:0}}>{desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats — hard data */}
         <div className="fu3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"2rem"}}>
-          {[{n:"73M",l:"U.S. women in perimenopause"},{n:"4–6yr",l:"Average wait for diagnosis"},{n:"4–6d",l:"Intake to medication"}].map(s=>(
-            <div key={s.n} style={{padding:"1.1rem 0.75rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"center"}}>
-              <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.terra,marginBottom:"0.35rem"}}>{s.n}</p>
-              <p style={{fontSize:10,color:T.inkSoft,lineHeight:1.5,fontWeight:300}}>{s.l}</p>
+          {[
+            {n:"73M",l:"U.S. women in perimenopause or menopause"},
+            {n:"<1%",l:"Of U.S. doctors certified in menopause care"},
+            {n:"85%",l:"Of women with symptoms not being treated"},
+          ].map(s=>(
+            <div key={s.n} style={{padding:"1rem 0.75rem 1rem 1rem",background:T.cream,borderLeft:`3px solid ${T.terra}`}}>
+              <p style={{fontFamily:"'Playfair Display',serif",fontSize:30,fontWeight:700,color:T.terra,marginBottom:"0.35rem",lineHeight:1}}>{s.n}</p>
+              <p style={{fontSize:14,color:T.inkSoft,lineHeight:1.5,fontWeight:300}}>{s.l}</p>
             </div>
           ))}
         </div>
 
         {/* Learn more — deep content on demand */}
-        <div className="fu3" style={{marginBottom:"1.5rem"}}>
-          <button onClick={()=>setLearnMore(v=>!v)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:learnMore?"10px 10px 0 0":"10px",padding:"0.75rem 1.25rem",fontSize:13,color:T.inkMid,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontWeight:400,width:"100%",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
-            <span>{learnMore ? "Close" : "Learn more about Folia"}</span>
-            <span style={{fontSize:18,color:T.terra,transform:learnMore?"rotate(180deg)":"none",transition:"transform 0.25s",lineHeight:1}}>⌄</span>
+        <div className="fu3" style={{marginBottom:"1rem"}}>
+          <button onClick={()=>setLearnMore(v=>!v)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:learnMore?"14px 14px 0 0":"14px",padding:"1.25rem 1.5rem",fontSize:15,color:T.inkMid,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontWeight:400,width:"100%",textAlign:"left",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"all 0.2s"}}>
+            <span>{learnMore ? "Close" : "Learn more — the care gap, your protocol, FAQs"}</span>
+            <span style={{fontSize:20,color:T.terra,transform:learnMore?"rotate(180deg)":"none",transition:"transform 0.25s",lineHeight:1}}>⌄</span>
           </button>
           {learnMore&&(
             <div style={{background:T.cream,borderRadius:"0 0 12px 12px",padding:"1.5rem",border:`1px solid ${T.border}`,borderTop:"none"}}>
-
-              {/* Step descriptions */}
-              <p style={{fontSize:10,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"1rem"}}>How it works</p>
-              {[
-                ["01 — Precision assessment","A conversational intake that identifies your perimenopause stage in minutes — based on cycle changes, symptoms, and risk profile."],
-                ["02 — Provider-reviewed care","Licensed clinicians review your case the same day and determine the safest, most effective treatment — without requiring an appointment."],
-                ["03 — Treatment, delivered","If appropriate, prescriptions are issued and shipped directly to your door within days."],
-                ["04 — Ongoing support system","Structured follow-ups, care touchpoints, and continuous adjustments — designed to support you through every phase."],
-              ].map(([title,desc],i)=>(
-                <div key={i} style={{marginBottom:"1rem",paddingBottom:"1rem",borderBottom:i<3?`1px solid ${T.border}`:"none"}}>
-                  <p style={{fontSize:13,fontWeight:500,color:T.ink,marginBottom:"0.3rem"}}>{title}</p>
-                  <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300}}>{desc}</p>
-                </div>
-              ))}
 
               {/* Education */}
               <div style={{marginTop:"1.25rem",paddingTop:"1.25rem",borderTop:`1px solid ${T.border}`}}>
@@ -415,6 +535,21 @@ export default function Folia() {
                 <p style={{fontSize:12,fontWeight:500,color:T.terra,marginTop:"0.875rem",paddingTop:"0.875rem",borderTop:"1px solid rgba(255,255,255,0.1)"}}>Because perimenopause evolves — and your care should too.</p>
               </div>
 
+              {/* Pre-diagnosis — the gap Folia fills */}
+              <div style={{marginTop:"1.25rem",paddingTop:"1.25rem",borderTop:`1px solid ${T.border}`}}>
+                <p style={{fontSize:10,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.75rem"}}>Why most women wait years for answers</p>
+                <p style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:700,color:T.ink,marginBottom:"0.6rem",lineHeight:1.3}}>The system isn't built for the beginning of this transition.</p>
+                <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300,marginBottom:"0.75rem"}}>Less than 1% of U.S. doctors hold a menopause certification. Only 31% of OB/GYN residency programs include a menopause curriculum. Most offer a single lecture. Less than 7% of residents feel prepared to support a woman in perimenopause.</p>
+                <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300,marginBottom:"0.75rem"}}>The result: 60% of women with significant symptoms never seek care. Of those who do, only 25% are actually treated. That means roughly 85% of women experiencing real hormonal symptoms are going without clinical support — not because they don't need it, but because the system isn't catching them.</p>
+                <p style={{fontSize:13,color:T.inkMid,lineHeight:1.65,fontWeight:300,marginBottom:"0.75rem"}}>Perimenopause can begin a decade before your last period. In the earliest stage, cycles are still regular. Bloodwork looks normal. A doctor will tell you everything is fine. But sleep is broken, mood is unpredictable, energy is different, and something has shifted that you can feel but nobody has named.</p>
+                <div style={{padding:"0.875rem 1rem",background:T.ink,borderRadius:10,marginTop:"0.5rem"}}>
+                  <p style={{fontSize:13,color:T.white,lineHeight:1.65,fontWeight:300}}>Folia is built for <strong style={{fontWeight:500,color:T.terra}}>that</strong> woman — the one the system hasn't caught yet. Our intake identifies early hormonal transition before irregular periods begin. You don't need a diagnosis to start understanding what's happening to your body.</p>
+                </div>
+                <div style={{marginTop:"1rem",padding:"1rem",background:T.cream,borderLeft:`3px solid ${T.terra}`,borderRadius:0}}>
+                  <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300}}>Most perimenopause assessments begin with one question: has your cycle changed? Folia doesn't. Our intake maps the full hormonal picture — sleep, mood, energy, skin, cycle, and body — because early transition shows up in how you feel before it shows up in your bloodwork. <strong style={{fontWeight:500,color:T.ink}}>If your periods are still regular and your doctor says everything looks fine, this intake was built specifically for you.</strong></p>
+                </div>
+              </div>
+
               {/* FAQ */}
               <div style={{marginTop:"1.25rem",paddingTop:"1.25rem",borderTop:`1px solid ${T.border}`}}>
                 <p style={{fontSize:10,fontWeight:500,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.875rem"}}>Common questions</p>
@@ -431,7 +566,7 @@ export default function Folia() {
         </div>
 
         {/* Consent */}
-        <div className="fu4" style={{padding:"1.25rem 1.5rem",background:T.cream,borderRadius:14,marginBottom:"1.75rem",display:"flex",gap:14,alignItems:"flex-start",borderLeft:`3px solid ${T.terra}`}}>
+        <div className="fu4" style={{padding:"1.25rem 1.5rem",background:T.cream,borderRadius:14,marginTop:"1rem",marginBottom:"1.75rem",display:"flex",gap:14,alignItems:"flex-start",border:`1px solid ${T.border}`,borderLeft:`3px solid ${T.terra}`}}>
           <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)} style={{marginTop:4,width:16,height:16,accentColor:T.terra,flexShrink:0,cursor:"pointer"}}/>
           <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,fontWeight:300}}>
             I understand Folia connects me with independent licensed providers who make all prescribing decisions. I consent to my responses being used to build my hormone profile, protected under HIPAA.
@@ -439,10 +574,11 @@ export default function Folia() {
         </div>
 
         <div className="fu4">
-          <Btn onClick={startChat} disabled={!agreed}>Start your assessment →</Btn>
+          <Btn onClick={startChat} disabled={!agreed}>I'm ready to understand →</Btn>
           <p style={{fontSize:12,color:T.inkSoft,marginTop:"0.75rem",textAlign:"center"}}>You don't need to guess what's happening to your body. You need a system built for it.</p>
         </div>
       </div>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
     </Shell>
   );
 
@@ -494,6 +630,7 @@ export default function Folia() {
           <button onClick={()=>send()} disabled={loading||!input.trim()} style={{padding:"0.9rem 1.5rem",background:input.trim()&&!loading?T.ink:T.border,color:input.trim()&&!loading?T.white:T.inkSoft,border:"none",borderRadius:12,fontSize:14,fontWeight:500,cursor:input.trim()&&!loading?"pointer":"default",fontFamily:"'DM Sans',sans-serif"}}>Send</button>
         </div>
       </div>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
     </Shell>
   );
 
@@ -522,9 +659,10 @@ export default function Folia() {
       </div>
 
       <Btn onClick={()=>setView("results")} disabled={!allConsent}>
-        {allConsent?"Build my hormone profile →":"Please confirm all items above"}
+        {allConsent?"I'm ready to understand →":"Please confirm all items above"}
       </Btn>
       <div style={{height:"2rem"}}/>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
     </Shell>
   );
 
@@ -561,7 +699,7 @@ export default function Folia() {
         </div>
       )}
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:"2rem"}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:"1.5rem"}}>
         {[{label:"Hormone stage",value:ph.label},{label:"Medication to door",value:"4–6 days"},{label:"Care approach",value:ph.urgency},{label:"Recommended plan",value:recommendedPlan.name}].map(m=>(
           <div key={m.label} style={{padding:"1.25rem 1.5rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14}}>
             <p style={{fontSize:11,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.5rem"}}>{m.label}</p>
@@ -570,7 +708,15 @@ export default function Folia() {
         ))}
       </div>
 
+      {/* Care gap context */}
+      <div style={{padding:"1rem 1.25rem",background:T.cream,borderRadius:12,borderLeft:`3px solid ${T.terra}`,marginBottom:"2rem"}}>
+        <p style={{fontSize:12,color:T.inkMid,lineHeight:1.7,fontWeight:300}}>
+          <strong style={{fontWeight:500,color:T.ink}}>You caught this early.</strong> Most women wait 4–6 years for their symptoms to be named. Less than 1% of U.S. doctors are certified in menopause care — which means most women are told everything is fine long after something has shifted. Folia is built to close that gap.
+        </p>
+      </div>
+
       <Btn onClick={()=>setView("pricing")}>Build my care system →</Btn>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
     </Shell>
   );
 
@@ -622,6 +768,7 @@ export default function Folia() {
 
       <Btn onClick={()=>setView("protocol")}>See my full protocol →</Btn>
       <div style={{height:"2.5rem"}}/>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
     </Shell>
   );
 
@@ -710,6 +857,7 @@ export default function Folia() {
 
         <Btn onClick={()=>setView("onboarding")}>See my care plan →</Btn>
         <div style={{height:"2.5rem"}}/>
+        <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
       </Shell>
     );
   }
@@ -722,7 +870,7 @@ export default function Folia() {
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:"1.5rem"}}>
           <div style={{width:44,height:44,borderRadius:"50%",background:T.terra,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Playfair Display',serif",fontSize:18,color:T.white,fontWeight:700,flexShrink:0}}>S</div>
           <div>
-            <p style={{fontSize:14,fontWeight:500,color:T.white}}>Sarah</p>
+            <p style={{fontSize:14,fontWeight:500,color:T.white}}>Amara</p>
             <p style={{fontSize:12,color:"rgba(255,255,255,0.45)",fontWeight:300}}>Your Folia care guide</p>
           </div>
         </div>
@@ -731,7 +879,7 @@ export default function Folia() {
         <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300,marginBottom:"1rem"}}>I'll call you on day 7. Ten minutes, no agenda. I just want to know how you're settling in and make sure everything makes sense.</p>
         <p style={{fontSize:14,color:"rgba(255,255,255,0.65)",lineHeight:1.8,fontWeight:300}}>Your full care year is already mapped out. You don't have to chase anything — we'll show up before you need to ask.</p>
         <div style={{marginTop:"1.5rem",paddingTop:"1.5rem",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
-          <p style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:300}}>Sarah · Folia Care Team · care@folia.com</p>
+          <p style={{fontSize:12,color:"rgba(255,255,255,0.3)",fontWeight:300}}>Amara · Folia Care Team · care@folia.com</p>
         </div>
       </div>
 
@@ -741,7 +889,7 @@ export default function Folia() {
           {time:"Next 2–4 hrs",label:"Provider maps your care options",detail:"Your hormone profile is reviewed. If a prescription makes sense, it's issued same day — no appointment.",icon:"●",color:T.terra},
           {time:"Tonight",label:"Tracking number in your inbox",detail:"Medication ships within 48 hours. Your Layer SPF sample is matched to your UV profile.",icon:"●",color:T.terra},
           {time:"Day 4–6",label:"Your system arrives at the door",detail:"Medication + protocol card + Layer SPF sample. Everything you need to start, already organized.",icon:"○",color:T.inkSoft},
-          {time:"Day 7",label:"Sarah calls",detail:"Ten minutes. No agenda. Just checking in.",icon:"◈",color:T.rose},
+          {time:"Day 7",label:"Amara calls",detail:"Ten minutes. No agenda. Just checking in.",icon:"◈",color:T.rose},
         ].map((item,i)=>(
           <div key={i} style={{display:"flex",gap:14,paddingBottom:i<3?"1.1rem":0,marginBottom:i<3?"1.1rem":0,borderBottom:i<3?`1px solid ${T.border}`:"none"}}>
             <div style={{minWidth:70}}><p style={{fontSize:11,color:item.color,fontWeight:500,lineHeight:1.4}}>{item.time}</p></div>
@@ -755,6 +903,7 @@ export default function Folia() {
 
       <Btn onClick={()=>setView("dashboard")}>View my full care calendar →</Btn>
       <div style={{height:"2.5rem"}}/>
+      <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
     </Shell>
   );
 
@@ -768,7 +917,7 @@ export default function Folia() {
         <p style={{fontSize:15,color:T.inkSoft,fontWeight:300,lineHeight:1.65,marginBottom:"2rem"}}>Every touchpoint pre-scheduled. We show up before you need to ask.</p>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"1.75rem"}}>
-          {[{l:"Medication ETA",v:"4–6d"},{l:"Care touchpoints",v:"9"},{l:"Your guide",v:"Sarah"}].map(m=>(
+          {[{l:"Medication ETA",v:"4–6d"},{l:"Care touchpoints",v:"9"},{l:"Your guide",v:"Amara"}].map(m=>(
             <div key={m.l} style={{padding:"1.25rem 1rem",background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,textAlign:"center"}}>
               <p style={{fontSize:10,color:T.inkSoft,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"0.5rem"}}>{m.l}</p>
               <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:T.ink}}>{m.v}</p>
@@ -859,17 +1008,17 @@ export default function Folia() {
           </div>
         )}
 
-        {/* Sarah card */}
+        {/* Amara card */}
         <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:20,padding:"1.5rem",marginBottom:"2rem"}}>
           <div style={{display:"flex",gap:14,alignItems:"center"}}>
             <div style={{width:48,height:48,borderRadius:"50%",background:T.terra,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Playfair Display',serif",fontSize:20,color:T.white,fontWeight:700,flexShrink:0}}>S</div>
             <div style={{flex:1}}>
-              <p style={{fontSize:15,fontWeight:500,color:T.ink,marginBottom:"0.2rem"}}>Sarah — your care guide</p>
+              <p style={{fontSize:15,fontWeight:500,color:T.ink,marginBottom:"0.2rem"}}>Amara — your care guide</p>
               <p style={{fontSize:13,color:T.inkSoft,fontWeight:300,lineHeight:1.55}}>Calling you on day 7. Available by message anytime. She has your full profile and follows your symptom trajectory.</p>
             </div>
           </div>
           <div style={{marginTop:"1rem",paddingTop:"1rem",borderTop:`1px solid ${T.border}`,display:"flex",gap:10}}>
-            <button style={{flex:1,padding:"0.75rem",background:T.cream,color:T.ink,border:"none",borderRadius:10,fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Message Sarah</button>
+            <button style={{flex:1,padding:"0.75rem",background:T.cream,color:T.ink,border:"none",borderRadius:10,fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Message Amara</button>
             <button style={{flex:1,padding:"0.75rem",background:T.ink,color:T.white,border:"none",borderRadius:10,fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>View care calendar</button>
           </div>
         </div>
@@ -878,6 +1027,7 @@ export default function Folia() {
           <p style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.ink,fontStyle:"italic",marginBottom:"0.5rem"}}>Your body always knew. Now it has a map.</p>
           <p style={{fontSize:13,color:T.inkSoft,lineHeight:1.75,maxWidth:400,margin:"0 auto",fontWeight:300}}>You matter enough for us to show up even when everything is fine.</p>
         </div>
+        <BottomNav view={view} setView={setView} profile={profile} startChat={startChat} fabOpen={fabOpen} setFabOpen={setFabOpen}/>
       </Shell>
     );
   }
