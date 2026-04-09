@@ -302,6 +302,7 @@ export default function Folia() {
   const [fabOpen,setFabOpen] = useState(false);
   const t = TR[lang]||TR.en;
   const bottomRef = useRef(null);
+  const profileRef = useRef(null);
   const scroll = () => setTimeout(()=>bottomRef.current?.scrollIntoView({behavior:"smooth"}),50);
 
   const allConsent = Object.values(consent).every(Boolean);
@@ -322,6 +323,7 @@ export default function Folia() {
       setReplies(parsed.replies);
       if(parsed.profile){
         setProfile(parsed.profile);
+        profileRef.current = parsed.profile;
         setTimeout(()=>setView("consent"),1200);
       }
     } catch { setMessages(prev=>[...prev,{role:"assistant",content:"err",display:"Something went wrong — please refresh."}]); }
@@ -341,8 +343,9 @@ export default function Folia() {
     scroll(); await callAPI(hist);
   }
 
-  const ph = profile ? (PHASES[profile.phase]||PHASES["early"]) : null;
-  const recommendedPlan = profile ? (PLANS.find(p=>p.phases.includes(profile.phase)&&p.recommended) || PLANS.find(p=>p.phases.includes(profile.phase)) || PLANS[1]) : PLANS[1];
+  const activeProfile = profile || profileRef.current;
+  const ph = activeProfile ? (PHASES[activeProfile.phase]||PHASES["early"]) : null;
+  const recommendedPlan = activeProfile ? (PLANS.find(p=>p.phases.includes(activeProfile.phase)&&p.recommended) || PLANS.find(p=>p.phases.includes(activeProfile.phase)) || PLANS[1]) : PLANS[1];
 
   // ── INFO DRAWER ───────────────────────────────────────────
   const InfoDrawer = () => !infoOpen ? null : (
@@ -637,7 +640,7 @@ export default function Folia() {
   );
 
   // ── CONSENT (medical) ────────────────────────────────────
-  if(view==="consent"&&profile) return (
+  if(view==="consent"&&activeProfile) return (
     <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Review & confirm"/>
       <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Before we build your profile</p>
       <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Almost there.</h2>
@@ -669,7 +672,7 @@ export default function Folia() {
   );
 
   // ── RESULTS ──────────────────────────────────────────────
-  if(view==="results"&&profile) return (
+  if(view==="results"&&activeProfile) return (
     <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Your perimenopause profile"/>
       <div className="fu" style={{padding:"2rem",background:T.ink,borderRadius:20,marginBottom:"1.5rem",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:ph.color,opacity:0.12}}/>
@@ -723,7 +726,7 @@ export default function Folia() {
   );
 
   // ── PRICING ──────────────────────────────────────────────
-  if(view==="pricing"&&profile) return (
+  if(view==="pricing"&&activeProfile) return (
     <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Choose your plan"/>
       <p className="fu" style={{fontSize:11,fontWeight:500,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:"0.75rem"}}>Your Folia system</p>
       <h2 className="fu1" style={{fontFamily:"'Playfair Display',serif",fontSize:34,fontWeight:700,color:T.ink,letterSpacing:"-0.02em",lineHeight:1.1,marginBottom:"0.5rem"}}>Choose the depth<br/>that fits where you are.</h2>
@@ -774,7 +777,7 @@ export default function Folia() {
     </Shell>
   );
 
-  if(view==="protocol"&&profile){
+  if(view==="protocol"&&activeProfile){
     const recs=getRecs(profile.skinConcern);
     const spfRec=getSunRec(profile.sunExposure||"");
     const sleepNote=SLEEP_RECS[profile.sleepStress?.includes("okay")?"okay":profile.sleepStress?.includes("moderate")?"moderate":profile.sleepStress?.includes("significantly")?"affected":"high"]||SLEEP_RECS.moderate;
@@ -865,7 +868,7 @@ export default function Folia() {
   }
 
   // ── ONBOARDING MESSAGE ───────────────────────────────────
-  if(view==="onboarding"&&profile) return(
+  if(view==="onboarding"&&activeProfile) return(
     <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Welcome to Folia"/>
       <div className="fu" style={{background:T.ink,borderRadius:20,padding:"2rem",marginBottom:"1.5rem",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:T.terra,opacity:0.1}}/>
@@ -910,7 +913,7 @@ export default function Folia() {
   );
 
   // ── DASHBOARD ────────────────────────────────────────────
-  if(view==="dashboard"&&profile){
+  if(view==="dashboard"&&activeProfile){
     const timeline=getCareTimeline();
     return(
       <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Dashboard"/>
@@ -1036,3 +1039,4 @@ export default function Folia() {
 
   return null;
 }
+
