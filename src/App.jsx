@@ -212,23 +212,25 @@ const TR = {
 };
 const Shell = ({children}) => <div style={{fontFamily:"'DM Sans',sans-serif",maxWidth:680,margin:"0 auto",padding:"0 2rem 4rem",minHeight:"100vh"}}>{children}</div>;
 const Header = ({right,lang,setLang,onInfo}) => (
-  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 1.5rem",borderBottom:`1px solid ${T.border}`,marginBottom:"2rem"}}>
-    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+  <div style={{marginBottom:"2rem"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"1.75rem 0 1rem",borderBottom:`1px solid ${T.border}`}}>
       <span style={{fontFamily:"'Playfair Display',serif",fontSize:36,fontWeight:700,color:T.ink,lineHeight:1}}>Folia</span>
-      <span style={{fontSize:10,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:500,lineHeight:1}}>Midlife Hormone System</span>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        {setLang&&(
+          <div style={{display:"flex",gap:2,background:T.cream,borderRadius:8,padding:3}}>
+            {Object.entries(LANGS).map(([code,l])=>(
+              <button key={code} onClick={()=>setLang(code)} style={{padding:"0.2rem 0.45rem",background:lang===code?T.ink:"transparent",color:lang===code?T.white:T.inkSoft,border:"none",borderRadius:5,fontSize:11,fontWeight:lang===code?500:400,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"}}>
+                {l.code}
+              </button>
+            ))}
+          </div>
+        )}
+        {onInfo&&<button onClick={onInfo} style={{width:28,height:28,borderRadius:"50%",background:T.cream,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"serif",flexShrink:0}}>?</button>}
+        {right&&<span style={{fontSize:12,color:T.inkSoft}}>{right}</span>}
+      </div>
     </div>
-    <div style={{display:"flex",alignItems:"center",gap:8}}>
-      {setLang&&(
-        <div style={{display:"flex",gap:2,background:T.cream,borderRadius:8,padding:3}}>
-          {Object.entries(LANGS).map(([code,l])=>(
-            <button key={code} onClick={()=>setLang(code)} style={{padding:"0.2rem 0.45rem",background:lang===code?T.ink:"transparent",color:lang===code?T.white:T.inkSoft,border:"none",borderRadius:5,fontSize:11,fontWeight:lang===code?500:400,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"}}>
-              {l.code}
-            </button>
-          ))}
-        </div>
-      )}
-      {onInfo&&<button onClick={onInfo} style={{width:28,height:28,borderRadius:"50%",background:T.cream,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"serif",flexShrink:0}}>?</button>}
-      {right&&<span style={{fontSize:12,color:T.inkSoft}}>{right}</span>}
+    <div style={{textAlign:"left",padding:"0.6rem 0"}}>
+      <span style={{fontSize:10,color:T.terra,textTransform:"uppercase",letterSpacing:"0.15em",fontWeight:500}}>Midlife Hormone System</span>
     </div>
   </div>
 );
@@ -584,7 +586,7 @@ export default function Folia() {
 
   // ── CHAT ─────────────────────────────────────────────────
   if(view==="chat") return (
-    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)} right="Perimenopause intake"/>
+    <Shell><style>{G}</style><InfoDrawer/><Header lang={lang} setLang={setLang} onInfo={()=>setInfoOpen(true)}/>
       <div style={{display:"flex",gap:6,marginBottom:"1.5rem"}}>
         {[0,1,2,3,4,5,6,7,8,9].map(i=>(
           <div key={i} style={{height:3,flex:1,borderRadius:2,background:i<Math.min(messages.filter(m=>m.role==="assistant").length,10)?T.terra:T.border,transition:"background 0.3s"}}/>
